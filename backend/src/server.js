@@ -26,27 +26,41 @@ app.use((req, res, next) => {
 // Mount API routes
 app.use('/api', apiRoutes);
 
-// Root greeting
-app.get('/', (req, res) => {
-  res.json({
-    project: 'AgroChrono-BD',
-    version: '1.0.0',
-    description: 'AI/ML-Assisted Agricultural Crop-Calendar Validation Platform for Bangladesh',
-    apiStatus: 'Online',
-    documentation: '/api/health',
-    endpoints: [
-      'GET  /api/health',
-      'GET  /api/options',
-      'POST /api/validate',
-      'GET  /api/weather',
-      'GET  /api/reference',
-      'POST /api/analyze',
-      'POST /api/reanalyze',
-      'GET  /api/results/:id',
-      'GET  /api/history'
-    ]
+// Serve static frontend files if available
+const publicDir = path.join(__dirname, '../public');
+const fs = require('fs');
+
+if (fs.existsSync(path.join(publicDir, 'index.html'))) {
+  app.use(express.static(publicDir));
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(publicDir, 'index.html'));
   });
-});
+} else {
+  // Root greeting fallback
+  app.get('/', (req, res) => {
+    res.json({
+      project: 'AgroChrono-BD',
+      version: '1.0.0',
+      description: 'AI/ML-Assisted Agricultural Crop-Calendar Validation Platform for Bangladesh',
+      apiStatus: 'Online',
+      documentation: '/api/health',
+      endpoints: [
+        'GET  /api/health',
+        'GET  /api/options',
+        'POST /api/validate',
+        'GET  /api/weather',
+        'GET  /api/reference',
+        'POST /api/analyze',
+        'POST /api/reanalyze',
+        'GET  /api/results/:id',
+        'GET  /api/history'
+      ]
+    });
+  });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
