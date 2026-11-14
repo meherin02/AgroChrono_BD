@@ -97,9 +97,210 @@
       "harvestEnd": "2027-01-15",
       "id": "sub_1794680961347_rop0rr",
       "createdAt": "2026-11-14T18:29:21.347Z"
+    },
+    {
+      "crop": "Rice",
+      "district": "Rangpur",
+      "season": "Aman",
+      "variety": "BRRI dhan49",
+      "plantingStart": "2026-07-20",
+      "plantingEnd": "2026-07-30",
+      "growthStart": "2026-08-01",
+      "growthEnd": "2026-11-20",
+      "harvestStart": "2026-11-25",
+      "harvestEnd": "2026-12-10",
+      "id": "sub_1794681694984_n2u6lq",
+      "createdAt": "2026-11-14T18:41:34.984Z"
     }
   ],
   "results": [
+    {
+      "submissionId": "sub_1794681694984_n2u6lq",
+      "submission": {
+        "crop": "Rice",
+        "district": "Rangpur",
+        "season": "Aman",
+        "variety": "BRRI dhan49",
+        "plantingStart": "2026-07-20",
+        "plantingEnd": "2026-07-30",
+        "growthStart": "2026-08-01",
+        "growthEnd": "2026-11-20",
+        "harvestStart": "2026-11-25",
+        "harvestEnd": "2026-12-10"
+      },
+      "reference": {
+        "id": "ref-rice-aman-rangpur",
+        "crop": "Rice",
+        "season": "Aman",
+        "district": "Rangpur",
+        "varieties": [
+          "BRRI dhan49",
+          "BRRI dhan51",
+          "BRRI dhan75",
+          "BRRI dhan87",
+          "Swarna"
+        ],
+        "plantingWindow": "15 July – 25 August",
+        "growthDurationDays": {
+          "min": 115,
+          "max": 140,
+          "typical": 125
+        },
+        "harvestWindow": "10 November – 15 December",
+        "sourceName": "BRRI & BAMIS DAE Agro-Meteorological Bulletin",
+        "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+        "lastUpdated": "2026-01-15"
+      },
+      "reliabilityScore": 98,
+      "reliabilityCategory": "High Reliability",
+      "badgeClass": "text-emerald-700 bg-emerald-50 border-emerald-200",
+      "assessmentCompleteness": 100,
+      "parameterScores": {
+        "planting": {
+          "score": 100,
+          "weight": 0.3,
+          "contribution": 30
+        },
+        "growth": {
+          "score": 88,
+          "weight": 0.2,
+          "contribution": 18
+        },
+        "harvest": {
+          "score": 100,
+          "weight": 0.25,
+          "contribution": 25
+        },
+        "weather": {
+          "score": 100,
+          "weight": 0.25,
+          "contribution": 25
+        }
+      },
+      "weightsUsed": {
+        "planting": 0.3,
+        "growth": 0.2,
+        "harvest": 0.25,
+        "weather": 0.25
+      },
+      "weatherNote": null,
+      "anomalyDetected": true,
+      "mlResult": {
+        "available": true,
+        "is_anomaly": true,
+        "anomaly_score": 0.0004,
+        "normalized_anomaly_index": 0.501,
+        "prediction_label": "Unusual Pattern Detected",
+        "feature_deviations": {
+          "planting_doy": {
+            "value": 200,
+            "mean": 265.1,
+            "z_score": -0.77,
+            "status": "normal"
+          },
+          "growth_days": {
+            "value": 111,
+            "mean": 122,
+            "z_score": -0.47,
+            "status": "normal"
+          },
+          "harvest_doy": {
+            "value": 328,
+            "mean": 180.9,
+            "z_score": 1.24,
+            "status": "normal"
+          },
+          "mean_temperature": {
+            "value": 25.9,
+            "mean": 25.2,
+            "z_score": 0.17,
+            "status": "normal"
+          },
+          "total_rainfall": {
+            "value": 1002.1,
+            "mean": 458.6,
+            "z_score": 1.26,
+            "status": "normal"
+          }
+        },
+        "model_version": "isolation-forest-v1.0"
+      },
+      "mlFeatures": {
+        "planting_doy": 200,
+        "growth_days": 111,
+        "harvest_doy": 328,
+        "mean_temperature": 25.9,
+        "total_rainfall": 1002.1
+      },
+      "conflicts": [
+        {
+          "field": "Planting Window",
+          "submitted": "19 Jul 2026 – 29 Jul 2026",
+          "reference": "15 July – 25 August",
+          "status": "Compatible",
+          "deviationDays": 0,
+          "severity": "none",
+          "details": "Planting schedule falls squarely inside recommended agro-climatic window."
+        },
+        {
+          "field": "Growth Duration",
+          "submitted": "111 days",
+          "reference": "115 – 140 days (Typical: 125d)",
+          "status": "Moderate Conflict",
+          "deviationDays": 4,
+          "severity": "warning",
+          "details": "Your proposed growth duration of 111 days is 4 days shorter than the standard 115–140 days for this crop. Early maturity estimates risk harvesting before complete grain physiological maturity."
+        },
+        {
+          "field": "Harvest Window",
+          "submitted": "24 Nov 2026 – 9 Dec 2026",
+          "reference": "10 November – 15 December",
+          "status": "Compatible",
+          "deviationDays": 0,
+          "severity": "none",
+          "details": "Harvest window coincides with favorable regional ripening and drying conditions."
+        },
+        {
+          "field": "Weather Compatibility",
+          "submitted": "Mean Temp: 25.9°C, Rain: 1002.1mm",
+          "reference": "Optimal: 25–32°C",
+          "status": "Compatible",
+          "deviationDays": 0,
+          "severity": "none",
+          "details": "Temperatures and moisture levels align favorably with crop phenological requirements."
+        }
+      ],
+      "explanations": [
+        "Your proposed growth duration of 111 days is 4 days shorter than the standard 115–140 days for this crop. Early maturity estimates risk harvesting before complete grain physiological maturity."
+      ],
+      "suggestedCalendar": {
+        "crop": "Rice",
+        "district": "Rangpur",
+        "season": "Aman",
+        "variety": "BRRI dhan49",
+        "plantingStart": "2026-07-15",
+        "plantingEnd": "2026-08-25",
+        "growthStart": "2026-08-26",
+        "growthEnd": "2026-12-14",
+        "harvestStart": "2026-12-21",
+        "harvestEnd": "2027-01-05",
+        "growthDurationDays": 125,
+        "correctionReason": "Calibrated timeline to eliminate 1 detected discrepancies and match BRRI & BAMIS DAE Agro-Meteorological Bulletin standard windows."
+      },
+      "weatherAssessment": {
+        "meanTemperature": 25.9,
+        "minTemperature": 12.5,
+        "maxTemperature": 35.1,
+        "totalRainfall": 1002.1,
+        "status": "Compatible",
+        "score": 100,
+        "dataSource": "Open-Meteo Historical Archive API",
+        "summary": "Temperatures and moisture levels align favorably with crop phenological requirements.",
+        "note": "Weather context derived from Open-Meteo historical reanalysis for the cultivation window."
+      },
+      "id": "res_1794681695025_5zfpbg",
+      "createdAt": "2026-11-14T18:41:35.025Z"
+    },
     {
       "submissionId": "sub_1794680961347_rop0rr",
       "submission": {
