@@ -1,0 +1,442 @@
+[
+  {
+    "id": "ref-rice-aman-rangpur",
+    "crop": "Rice",
+    "season": "Aman",
+    "district": "Rangpur",
+    "varieties": ["BRRI dhan49", "BRRI dhan51", "BRRI dhan75", "BRRI dhan87", "Swarna"],
+    "plantingWindow": {
+      "startMonth": 7,
+      "startDay": 15,
+      "endMonth": 8,
+      "endDay": 25,
+      "label": "15 July – 25 August",
+      "startDOY": 196,
+      "endDOY": 237
+    },
+    "growthDurationDays": {
+      "min": 115,
+      "max": 140,
+      "typical": 125
+    },
+    "harvestWindow": {
+      "startMonth": 11,
+      "startDay": 10,
+      "endMonth": 12,
+      "endDay": 15,
+      "label": "10 November – 15 December",
+      "startDOY": 314,
+      "endDOY": 349
+    },
+    "temperatureRange": {
+      "min": 20,
+      "max": 35,
+      "optimalMin": 25,
+      "optimalMax": 32
+    },
+    "rainfallRequirementMm": {
+      "min": 600,
+      "max": 1400,
+      "label": "High Monsoon (600 - 1400mm)"
+    },
+    "sourceName": "BRRI & BAMIS DAE Agro-Meteorological Bulletin",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-rice-aman-rajshahi",
+    "crop": "Rice",
+    "season": "Aman",
+    "district": "Rajshahi",
+    "varieties": ["BRRI dhan49", "BRRI dhan56", "BRRI dhan71", "Swarna"],
+    "plantingWindow": {
+      "startMonth": 7,
+      "startDay": 20,
+      "endMonth": 8,
+      "endDay": 25,
+      "label": "20 July – 25 August",
+      "startDOY": 201,
+      "endDOY": 237
+    },
+    "growthDurationDays": {
+      "min": 115,
+      "max": 138,
+      "typical": 125
+    },
+    "harvestWindow": {
+      "startMonth": 11,
+      "startDay": 12,
+      "endMonth": 12,
+      "endDay": 10,
+      "label": "12 November – 10 December",
+      "startDOY": 316,
+      "endDOY": 344
+    },
+    "temperatureRange": {
+      "min": 21,
+      "max": 36,
+      "optimalMin": 25,
+      "optimalMax": 33
+    },
+    "rainfallRequirementMm": {
+      "min": 550,
+      "max": 1200,
+      "label": "Moderate to High (550 - 1200mm)"
+    },
+    "sourceName": "BARC Crop Zoning & BAMIS",
+    "sourceUrl": "https://cropzoning.gov.bd/",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-rice-aman-mymensingh",
+    "crop": "Rice",
+    "season": "Aman",
+    "district": "Mymensingh",
+    "varieties": ["BRRI dhan49", "BRRI dhan52", "BRRI dhan87", "Binadhan-7"],
+    "plantingWindow": {
+      "startMonth": 7,
+      "startDay": 10,
+      "endMonth": 8,
+      "endDay": 20,
+      "label": "10 July – 20 August",
+      "startDOY": 191,
+      "endDOY": 232
+    },
+    "growthDurationDays": {
+      "min": 120,
+      "max": 145,
+      "typical": 130
+    },
+    "harvestWindow": {
+      "startMonth": 11,
+      "startDay": 15,
+      "endMonth": 12,
+      "endDay": 20,
+      "label": "15 November – 20 December",
+      "startDOY": 319,
+      "endDOY": 354
+    },
+    "temperatureRange": {
+      "min": 20,
+      "max": 35,
+      "optimalMin": 24,
+      "optimalMax": 32
+    },
+    "rainfallRequirementMm": {
+      "min": 700,
+      "max": 1500,
+      "label": "High Monsoon (700 - 1500mm)"
+    },
+    "sourceName": "BRRI Rice Crop Manager & DAE",
+    "sourceUrl": "https://webapps.irri.org/bd/rcm/",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-rice-aman-dhaka",
+    "crop": "Rice",
+    "season": "Aman",
+    "district": "Dhaka",
+    "varieties": ["BRRI dhan49", "BRRI dhan87", "BRRI dhan71"],
+    "plantingWindow": {
+      "startMonth": 7,
+      "startDay": 15,
+      "endMonth": 8,
+      "endDay": 25,
+      "label": "15 July – 25 August",
+      "startDOY": 196,
+      "endDOY": 237
+    },
+    "growthDurationDays": {
+      "min": 118,
+      "max": 140,
+      "typical": 126
+    },
+    "harvestWindow": {
+      "startMonth": 11,
+      "startDay": 15,
+      "endMonth": 12,
+      "endDay": 15,
+      "label": "15 November – 15 December",
+      "startDOY": 319,
+      "endDOY": 349
+    },
+    "temperatureRange": {
+      "min": 20,
+      "max": 35,
+      "optimalMin": 25,
+      "optimalMax": 32
+    },
+    "rainfallRequirementMm": {
+      "min": 650,
+      "max": 1400,
+      "label": "High Monsoon (650 - 1400mm)"
+    },
+    "sourceName": "BAMIS DAE Bulletin",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-rice-boro-mymensingh",
+    "crop": "Rice",
+    "season": "Boro",
+    "district": "Mymensingh",
+    "varieties": ["BRRI dhan28", "BRRI dhan29", "BRRI dhan89", "BRRI dhan92", "SL-8H"],
+    "plantingWindow": {
+      "startMonth": 12,
+      "startDay": 15,
+      "endMonth": 1,
+      "endDay": 25,
+      "label": "15 December – 25 January",
+      "startDOY": 349,
+      "endDOY": 25
+    },
+    "growthDurationDays": {
+      "min": 140,
+      "max": 165,
+      "typical": 150
+    },
+    "harvestWindow": {
+      "startMonth": 4,
+      "startDay": 15,
+      "endMonth": 5,
+      "endDay": 25,
+      "label": "15 April – 25 May",
+      "startDOY": 105,
+      "endDOY": 145
+    },
+    "temperatureRange": {
+      "min": 14,
+      "max": 33,
+      "optimalMin": 18,
+      "optimalMax": 29
+    },
+    "rainfallRequirementMm": {
+      "min": 100,
+      "max": 400,
+      "label": "Low Natural Rain / Fully Irrigated"
+    },
+    "sourceName": "BRRI Boro Production Guidelines",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-rice-boro-rangpur",
+    "crop": "Rice",
+    "season": "Boro",
+    "district": "Rangpur",
+    "varieties": ["BRRI dhan28", "BRRI dhan29", "BRRI dhan88", "BRRI dhan89"],
+    "plantingWindow": {
+      "startMonth": 12,
+      "startDay": 20,
+      "endMonth": 1,
+      "endDay": 30,
+      "label": "20 December – 30 January",
+      "startDOY": 354,
+      "endDOY": 30
+    },
+    "growthDurationDays": {
+      "min": 142,
+      "max": 168,
+      "typical": 152
+    },
+    "harvestWindow": {
+      "startMonth": 4,
+      "startDay": 20,
+      "endMonth": 5,
+      "endDay": 30,
+      "label": "20 April – 30 May",
+      "startDOY": 110,
+      "endDOY": 150
+    },
+    "temperatureRange": {
+      "min": 12,
+      "max": 33,
+      "optimalMin": 16,
+      "optimalMax": 28
+    },
+    "rainfallRequirementMm": {
+      "min": 80,
+      "max": 350,
+      "label": "Irrigated Winter Season"
+    },
+    "sourceName": "BRRI & BAMIS",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-rice-aus-rangpur",
+    "crop": "Rice",
+    "season": "Aus",
+    "district": "Rangpur",
+    "varieties": ["BRRI dhan48", "BRRI dhan82", "BRRI dhan85", "Parija"],
+    "plantingWindow": {
+      "startMonth": 4,
+      "startDay": 1,
+      "endMonth": 5,
+      "endDay": 10,
+      "label": "01 April – 10 May",
+      "startDOY": 91,
+      "endDOY": 130
+    },
+    "growthDurationDays": {
+      "min": 98,
+      "max": 118,
+      "typical": 108
+    },
+    "harvestWindow": {
+      "startMonth": 7,
+      "startDay": 10,
+      "endMonth": 8,
+      "endDay": 15,
+      "label": "10 July – 15 August",
+      "startDOY": 191,
+      "endDOY": 227
+    },
+    "temperatureRange": {
+      "min": 24,
+      "max": 37,
+      "optimalMin": 28,
+      "optimalMax": 34
+    },
+    "rainfallRequirementMm": {
+      "min": 350,
+      "max": 900,
+      "label": "Pre-monsoon Rainfed / Supplemental"
+    },
+    "sourceName": "BAMIS & BRRI",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-wheat-rabi-dinajpur",
+    "crop": "Wheat",
+    "season": "Rabi",
+    "district": "Dinajpur",
+    "varieties": ["BARI Gom-25", "BARI Gom-26", "BARI Gom-30", "BARI Gom-33"],
+    "plantingWindow": {
+      "startMonth": 11,
+      "startDay": 15,
+      "endMonth": 12,
+      "endDay": 10,
+      "label": "15 November – 10 December",
+      "startDOY": 319,
+      "endDOY": 344
+    },
+    "growthDurationDays": {
+      "min": 102,
+      "max": 118,
+      "typical": 110
+    },
+    "harvestWindow": {
+      "startMonth": 3,
+      "startDay": 5,
+      "endMonth": 3,
+      "endDay": 30,
+      "label": "05 March – 30 March",
+      "startDOY": 64,
+      "endDOY": 89
+    },
+    "temperatureRange": {
+      "min": 10,
+      "max": 28,
+      "optimalMin": 15,
+      "optimalMax": 23
+    },
+    "rainfallRequirementMm": {
+      "min": 20,
+      "max": 100,
+      "label": "Dry Rabi Season"
+    },
+    "sourceName": "BWMRI (Bangladesh Wheat and Maize Research Institute) & BARC",
+    "sourceUrl": "https://cropzoning.gov.bd/",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-potato-rabi-munshiganj",
+    "crop": "Potato",
+    "season": "Rabi",
+    "district": "Munshiganj",
+    "varieties": ["Diamant", "Cardinal", "Asterix", "Granola"],
+    "plantingWindow": {
+      "startMonth": 11,
+      "startDay": 5,
+      "endMonth": 12,
+      "endDay": 5,
+      "label": "05 November – 05 December",
+      "startDOY": 309,
+      "endDOY": 339
+    },
+    "growthDurationDays": {
+      "min": 85,
+      "max": 105,
+      "typical": 95
+    },
+    "harvestWindow": {
+      "startMonth": 2,
+      "startDay": 10,
+      "endMonth": 3,
+      "endDay": 10,
+      "label": "10 February – 10 March",
+      "startDOY": 41,
+      "endDOY": 69
+    },
+    "temperatureRange": {
+      "min": 12,
+      "max": 25,
+      "optimalMin": 16,
+      "optimalMax": 22
+    },
+    "rainfallRequirementMm": {
+      "min": 15,
+      "max": 80,
+      "label": "Light / Controlled Irrigation"
+    },
+    "sourceName": "TCRC BARI & BAMIS",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  },
+  {
+    "id": "ref-mustard-rabi-manikganj",
+    "crop": "Mustard",
+    "season": "Rabi",
+    "district": "Manikganj",
+    "varieties": ["BARI Sarisha-14", "BARI Sarisha-17", "Tori-7"],
+    "plantingWindow": {
+      "startMonth": 10,
+      "startDay": 20,
+      "endMonth": 11,
+      "endDay": 20,
+      "label": "20 October – 20 November",
+      "startDOY": 293,
+      "endDOY": 324
+    },
+    "growthDurationDays": {
+      "min": 75,
+      "max": 90,
+      "typical": 82
+    },
+    "harvestWindow": {
+      "startMonth": 1,
+      "startDay": 10,
+      "endMonth": 2,
+      "endDay": 10,
+      "label": "10 January – 10 February",
+      "startDOY": 10,
+      "endDOY": 41
+    },
+    "temperatureRange": {
+      "min": 12,
+      "max": 26,
+      "optimalMin": 16,
+      "optimalMax": 23
+    },
+    "rainfallRequirementMm": {
+      "min": 10,
+      "max": 60,
+      "label": "Winter Rabi (Minimal)"
+    },
+    "sourceName": "BARI Oilseed Research Centre & DAE",
+    "sourceUrl": "https://www.bamis.gov.bd/en/calendar",
+    "lastUpdated": "2026-01-15"
+  }
+]
