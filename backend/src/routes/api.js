@@ -21,10 +21,12 @@ const SUPPORTED_CROPS = [
  */
 router.get('/health', async (req, res) => {
   const mlHealth = await checkMLHealth();
+  const dbStatus = db.getDatabaseStatus();
   res.json({
     status: 'ok',
     service: 'AgroChrono-BD Express API',
     uptime: process.uptime(),
+    database: dbStatus,
     mlMicroservice: mlHealth,
     timestamp: new Date().toISOString()
   });

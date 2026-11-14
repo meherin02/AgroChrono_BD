@@ -9,7 +9,7 @@ import AgronomicAdvisory from './components/AgronomicAdvisory';
 import WeatherWidget from './components/WeatherWidget';
 import HistoryDrawer from './components/HistoryDrawer';
 import { translations } from './utils/translations';
-import { Sprout, ShieldAlert, Award, FileSpreadsheet, ArrowUpRight, CheckCircle2 } from 'lucide-react';
+import { Sprout, ShieldAlert, Award, FileSpreadsheet, ArrowUpRight, CheckCircle2, Database, Cpu, CloudSun, ShieldCheck } from 'lucide-react';
 
 const API_BASE = '/api';
 
@@ -74,7 +74,7 @@ export default function App() {
       if (res.data?.success) {
         setActiveResult(res.data.data);
         fetchHistory();
-        window.scrollTo({ top: 380, behavior: 'smooth' });
+        window.scrollTo({ top: 440, behavior: 'smooth' });
       }
     } catch (err) {
       alert(`Validation / Analysis Error: ${err.response?.data?.error || err.message}`);
@@ -98,7 +98,7 @@ export default function App() {
         }
         setFormInitialValues(suggestedCalendar);
         fetchHistory();
-        window.scrollTo({ top: 380, behavior: 'smooth' });
+        window.scrollTo({ top: 440, behavior: 'smooth' });
       }
     } catch (err) {
       alert(`Re-analysis error: ${err.response?.data?.error || err.message}`);
@@ -175,7 +175,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col bg-slate-50 text-slate-900 ${language === 'bn' ? 'font-bangla' : ''}`}>
+    <div className={`min-h-screen flex flex-col bg-slate-50/70 text-slate-900 ${language === 'bn' ? 'font-bangla' : ''}`}>
       
       {/* Header */}
       <Header
@@ -188,22 +188,50 @@ export default function App() {
         t={t}
       />
 
-      {/* Main Content */}
+      {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Hero Section */}
-        <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden border border-emerald-800/40">
+        {/* Stunning Hero Section with Ambient Glow */}
+        <div className="relative overflow-hidden bg-gradient-to-r from-emerald-950 via-emerald-900 to-slate-950 text-white rounded-3xl p-7 sm:p-9 shadow-2xl border border-emerald-800/40">
+          
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
           <div className="relative z-10 max-w-3xl">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 mb-3 backdrop-blur-xs">
-              🌾 {t.tagline}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 mb-3.5 backdrop-blur-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>{t.tagline}</span>
+            </div>
+            
+            <h1 className="text-2xl sm:text-4xl font-black tracking-tight text-white leading-tight">
               {t.heroTitle}
             </h1>
-            <p className="mt-2 text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
+            
+            <p className="mt-3 text-xs sm:text-sm text-emerald-100/90 leading-relaxed max-w-2xl font-medium">
               {t.heroDesc}
             </p>
+
+            {/* Micro KPI Pills */}
+            <div className="mt-6 flex flex-wrap items-center gap-2.5 text-xs">
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
+                <Database className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="font-bold text-white">MongoDB Ready</span>
+              </div>
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
+                <Cpu className="w-3.5 h-3.5 text-teal-400" />
+                <span className="font-bold text-white">Isolation Forest (FastAPI)</span>
+              </div>
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
+                <CloudSun className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="font-bold text-white">Open-Meteo Telemetry</span>
+              </div>
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/15">
+                <ShieldCheck className="w-3.5 h-3.5 text-green-400" />
+                <span className="font-bold text-white">BAMIS / BRRI Grounded</span>
+              </div>
+            </div>
           </div>
+
           <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-10 translate-y-10">
             <Sprout className="w-80 h-80 text-white" />
           </div>
@@ -221,19 +249,19 @@ export default function App() {
 
         {/* Comparison Alert Banner */}
         {comparisonBanner && (
-          <div className="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-900 shadow-sm animate-fade-in">
-            <div className="flex items-center space-x-3">
-              <span className="p-2 bg-emerald-600 text-white rounded-xl shadow-xs">
-                <Award className="w-5 h-5" />
+          <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border border-emerald-300 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-emerald-950 shadow-md animate-fade-in">
+            <div className="flex items-center space-x-3.5">
+              <span className="p-2.5 bg-emerald-600 text-white rounded-2xl shadow-md">
+                <Award className="w-6 h-6" />
               </span>
               <div>
-                <span className="font-bold text-sm">Suggested Calendar Successfully Applied!</span>
-                <p className="text-emerald-700 mt-0.5">
-                  Reliability score improved from <strong>{comparisonBanner.originalScore}%</strong> to <strong>{comparisonBanner.newScore}%</strong> (+{comparisonBanner.scoreImprovement}% increase).
+                <span className="font-black text-sm">Suggested Calendar Successfully Applied & Re-analyzed!</span>
+                <p className="text-emerald-800 mt-0.5 font-medium">
+                  Reliability score boosted from <strong>{comparisonBanner.originalScore}%</strong> to <strong>{comparisonBanner.newScore}%</strong> (+{comparisonBanner.scoreImprovement}% increase).
                 </p>
               </div>
             </div>
-            <span className="font-bold bg-white text-emerald-800 px-3 py-1.5 rounded-lg border border-emerald-200 self-start sm:self-auto shadow-2xs">
+            <span className="font-black bg-white text-emerald-900 px-3.5 py-2 rounded-xl border border-emerald-300 shadow-xs self-start sm:self-auto text-xs">
               ✓ {comparisonBanner.resolvedConflicts} Discrepancies Resolved
             </span>
           </div>
@@ -241,7 +269,7 @@ export default function App() {
 
         {/* Analysis Dashboard */}
         {activeResult && (
-          <div className="space-y-6">
+          <div className="space-y-7">
             
             {/* Reliability Score Gauge */}
             <ScoreGauge result={activeResult} />
@@ -256,38 +284,38 @@ export default function App() {
               </div>
 
               {/* Reference Dataset Card */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+              <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xl shadow-slate-200/40 p-6 flex flex-col justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-                    Verified Reference Benchmark
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+                    Verified Regional Benchmark
                   </span>
-                  <h4 className="text-base font-bold text-slate-900">
+                  <h4 className="text-lg font-black text-slate-900">
                     {activeResult.reference?.crop} ({activeResult.reference?.season})
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                  <p className="text-xs text-slate-500 font-semibold mt-0.5">
                     {activeResult.reference?.district} District Agro-Ecological Region
                   </p>
 
-                  <div className="mt-4 space-y-2 text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <div><span className="font-semibold text-slate-500">Planting Window:</span> <span className="font-bold">{activeResult.reference?.plantingWindow}</span></div>
-                    <div><span className="font-semibold text-slate-500">Growth Duration:</span> <span className="font-bold">{activeResult.reference?.growthDurationDays?.min}–{activeResult.reference?.growthDurationDays?.max} days</span> (typ. {activeResult.reference?.growthDurationDays?.typical}d)</div>
-                    <div><span className="font-semibold text-slate-500">Harvest Window:</span> <span className="font-bold">{activeResult.reference?.harvestWindow}</span></div>
+                  <div className="mt-4 space-y-2 text-xs text-slate-700 bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100 font-medium">
+                    <div><span className="font-bold text-slate-500">Planting Window:</span> <span className="font-black text-slate-900">{activeResult.reference?.plantingWindow}</span></div>
+                    <div><span className="font-bold text-slate-500">Growth Duration:</span> <span className="font-black text-slate-900">{activeResult.reference?.growthDurationDays?.min}–{activeResult.reference?.growthDurationDays?.max} days</span> (typ. {activeResult.reference?.growthDurationDays?.typical}d)</div>
+                    <div><span className="font-bold text-slate-500">Harvest Window:</span> <span className="font-black text-slate-900">{activeResult.reference?.harvestWindow}</span></div>
                     {activeResult.reference?.varieties && (
-                      <div className="pt-1 text-[11px] text-slate-500">
-                        <span className="font-semibold">Recommended Cultivars:</span> {activeResult.reference.varieties.join(', ')}
+                      <div className="pt-1.5 text-[11px] text-slate-500 border-t border-slate-200/60 mt-1">
+                        <span className="font-bold">Official Cultivars:</span> {activeResult.reference.varieties.join(', ')}
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 text-[11px] text-slate-400 mt-4 flex items-center justify-between">
-                  <span>Source: {activeResult.reference?.sourceName}</span>
+                <div className="pt-3.5 border-t border-slate-100 text-[11px] text-slate-400 mt-4 flex items-center justify-between">
+                  <span className="font-semibold truncate max-w-[180px]">Source: {activeResult.reference?.sourceName}</span>
                   {activeResult.reference?.sourceUrl && (
                     <a
                       href={activeResult.reference.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-emerald-600 hover:text-emerald-700 font-semibold inline-flex items-center"
+                      className="text-emerald-700 hover:text-emerald-800 font-bold inline-flex items-center"
                     >
                       BAMIS Portal <ArrowUpRight className="w-3 h-3 ml-0.5" />
                     </a>
@@ -321,13 +349,13 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 py-8 mt-12 text-center text-xs text-slate-500">
+      <footer className="bg-white border-t border-slate-200 py-8 mt-14 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 space-y-2">
-          <p className="font-semibold text-slate-800">
+          <p className="font-bold text-slate-800">
             AgroChrono-BD • AI/ML Crop-Calendar Reliability Assessment for Bangladesh
           </p>
           <p className="text-[11px] text-slate-400 max-w-2xl mx-auto">
-            Developed in alignment with the Bangladesh Agro-Meteorological Information Service (BAMIS - DAE), Bangladesh Rice Research Institute (BRRI), and Bangladesh Agricultural Research Council (BARC). Weather telemetry provided by Open-Meteo API.
+            Aligned with the Bangladesh Agro-Meteorological Information Service (BAMIS - DAE), Bangladesh Rice Research Institute (BRRI), and Bangladesh Agricultural Research Council (BARC). Weather telemetry provided by Open-Meteo API.
           </p>
         </div>
       </footer>

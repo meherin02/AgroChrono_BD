@@ -57,14 +57,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
-async function startServer() {
-  await connectDB();
+// Start Server immediately without blocking on external DB downloads
+function startServer() {
   app.listen(PORT, () => {
     console.log(`=======================================================`);
     console.log(` AgroChrono-BD Backend Server running on port ${PORT}`);
     console.log(` Health API: http://localhost:${PORT}/api/health`);
     console.log(`=======================================================`);
+  });
+
+  // Connect database asynchronously
+  connectDB().catch(err => {
+    console.warn('Background MongoDB init notice:', err.message);
   });
 }
 
