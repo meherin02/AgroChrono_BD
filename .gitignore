@@ -48,6 +48,10 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
+# Netlify & Archives
+.netlify/
+*.zip
+
 # Editor / OS
 .vscode/
 .idea/

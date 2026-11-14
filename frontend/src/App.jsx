@@ -11,7 +11,7 @@ import HistoryDrawer from './components/HistoryDrawer';
 import { translations } from './utils/translations';
 import { Sprout, ShieldAlert, Award, FileSpreadsheet, ArrowUpRight, CheckCircle2, Database, Cpu, CloudSun, ShieldCheck } from 'lucide-react';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export default function App() {
   const [language, setLanguage] = useState('en');
