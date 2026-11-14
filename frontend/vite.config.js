@@ -16,6 +16,7 @@ export default defineConfig({
   preview: {
     port: 3000,
     host: true,
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: process.env.VITE_BACKEND_URL || 'https://agrochrono-app-production.up.railway.app',
