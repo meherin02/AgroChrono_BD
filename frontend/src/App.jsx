@@ -544,6 +544,49 @@ export default function App() {
             )}
             {tab === "dashboard" && (
               <>
+                <section
+                  className="dashboard-welcome app-intro"
+                  aria-labelledby="app-intro-title"
+                >
+                  <div>
+                    <span className="welcome-label">
+                      <Sprout size={16} />
+                      {t("introLabel")}
+                    </span>
+                    <h2 id="app-intro-title">{t("introTitle")}</h2>
+                    <p>{t("introDescription")}</p>
+                    <ul
+                      className="intro-benefits"
+                      aria-label={t("introFeatures")}
+                    >
+                      <li>
+                        <CalendarDays size={14} aria-hidden="true" />
+                        {t("introStages")}
+                      </li>
+                      <li>
+                        <Sprout size={14} aria-hidden="true" />
+                        {t("introMl")}
+                      </li>
+                      <li>
+                        <Bell size={14} aria-hidden="true" />
+                        {t("introWeather")}
+                      </li>
+                    </ul>
+                    <button
+                      className="primary"
+                      onClick={() => navigate("calendar")}
+                    >
+                      <CalendarDays size={17} />
+                      {t("calendar")}
+                    </button>
+                  </div>
+                  <Sprout
+                    className="welcome-sprout"
+                    size={150}
+                    strokeWidth={1.1}
+                    aria-hidden="true"
+                  />
+                </section>
                 <div className="metric-grid dashboard-metrics">
                   {[
                     ["saved", dash?.count],
@@ -552,7 +595,18 @@ export default function App() {
                     ["revisions", dash?.revisions],
                   ].map(([k, v]) => (
                     <section className="card" key={k}>
-                      <span>{t(k)}</span>
+                      <span className="dashboard-metric-label">
+                        {k === "saved" ? (
+                          <CalendarDays size={20} />
+                        ) : k === "alerts" ? (
+                          <Bell size={20} />
+                        ) : k === "revisions" ? (
+                          <History size={20} />
+                        ) : (
+                          <LayoutDashboard size={20} />
+                        )}{" "}
+                        {t(k)}
+                      </span>
                       <strong>{n(v)}</strong>
                     </section>
                   ))}

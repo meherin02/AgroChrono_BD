@@ -1,5 +1,15 @@
 import React from "react";
 import DateInput from "./DateInput";
+import {
+  CalendarDays,
+  Sprout,
+  Scissors,
+  Layers,
+  MapPin,
+  Sun,
+  ArrowRight,
+  RotateCcw,
+} from "lucide-react";
 export const emptyCalendar = {
   crop: "Rice",
   season: "Aman",
@@ -36,33 +46,58 @@ export default function CalendarForm({
   const { t } = ui,
     change = (key, v) => onChange({ ...value, [key]: v });
   return (
-    <section className="card">
-      <h2>{t(revision ? "revisionIntro" : "calendar")}</h2>
-      <p className="muted">{t("formIntro")}</p>
+    <section className="card calendar-card">
+      <div className="form-card-heading">
+        <span className="heading-icon">
+          <CalendarDays size={23} />
+        </span>
+        <div>
+          <h2>{t(revision ? "revisionIntro" : "calendar")}</h2>
+          <p className="muted">{t("formIntro")}</p>
+        </div>
+      </div>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           onSubmit(value);
         }}
       >
-        <div className="form-grid">
-          <label>
-            {t("crop")}
-            <select
-              name="crop"
-              value={value.crop}
-              onChange={(e) => {
-                const c = options.crops.find((c) => c.id === e.target.value);
-                onChange({ ...value, crop: c.id, season: c.seasons[0] });
-              }}
+        <div className="form-section-heading">
+          <Layers size={16} />
+          <span>{t("cropLocation")}</span>
+        </div>
+        <div className="crop-selector" role="group" aria-label={t("crop")}>
+          {options.crops.map((c) => (
+            <button
+              className={
+                "crop-option " + (value.crop === c.id ? "selected" : "")
+              }
+              type="button"
+              key={c.id}
+              aria-pressed={value.crop === c.id}
+              onClick={() =>
+                onChange({
+                  ...value,
+                  crop: c.id,
+                  season: c.seasons.includes(value.season)
+                    ? value.season
+                    : c.seasons[0],
+                })
+              }
             >
-              {options.crops.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {t(c.id)}
-                </option>
-              ))}
-            </select>
-          </label>
+              <span className="crop-emoji" aria-hidden="true">
+                {{ Rice: "🌾", Wheat: "🌱", Potato: "🥔", Mustard: "🌼" }[
+                  c.id
+                ] || "🌿"}
+              </span>
+              <span>
+                <strong>{t(c.id)}</strong>
+                <small>{c.seasons.map(t).join(", ")}</small>
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="form-grid crop-details">
           <label>
             {t("season")}
             <select
@@ -118,11 +153,24 @@ export default function CalendarForm({
             </select>
           </label>
         </div>
+        <div className="form-section-heading">
+          <CalendarDays size={16} />
+          <span>{t("stageDates")}</span>
+        </div>
         <p className="hint">{t("dateHint")}</p>
         <div className="stage-grid">
           {["planting", "growth", "harvest"].map((stage) => (
             <fieldset key={stage} className={"stage " + stage}>
-              <legend>{t(stage)}</legend>
+              <legend>
+                {stage === "planting" ? (
+                  <Sprout size={17} />
+                ) : stage === "growth" ? (
+                  <Sun size={17} />
+                ) : (
+                  <Scissors size={17} />
+                )}{" "}
+                {t(stage)}
+              </legend>
               {["Start", "End"].map((part) => (
                 <label key={part}>
                   {t(part === "Start" ? "startDate" : "endDate")}
@@ -139,9 +187,10 @@ export default function CalendarForm({
             </fieldset>
           ))}
         </div>
-        <div className="actions no-print">
+        <div className="actions calendar-actions no-print">
           <button className="primary" disabled={busy} type="submit">
             {t(busy ? "saving" : revision ? "revisionSave" : "analyze")}
+            <ArrowRight size={17} />
           </button>
           {!revision && (
             <>

@@ -1,9 +1,18 @@
 import React from "react";
 import AgronomicAdvisory from "./AgronomicAdvisory";
+import ResultSummary from "./ResultSummary";
+import {
+  CloudSun,
+  Thermometer,
+  Droplets,
+  ShieldCheck,
+  TriangleAlert,
+  BookOpen,
+} from "lucide-react";
 export function ReferenceCard({ r, ui }) {
   const { t, n, window, date } = ui;
   return (
-    <article className="reference-card">
+    <article className="reference-card crop-reference">
       <h3>
         {t(r.crop)} · {t(r.season)}
       </h3>
@@ -45,8 +54,16 @@ export function WeatherView({ w, ui }) {
       w.retrievedAt &&
       Date.now() - Date.parse(w.retrievedAt) > 30 * 60000);
   return (
-    <section className="reference-card">
-      <h3>{t("weather")}</h3>
+    <section className="reference-card weather-panel">
+      <div className="panel-heading">
+        <span className="weather-icon">
+          <CloudSun size={24} />
+        </span>
+        <div>
+          <h3>{t("weather")}</h3>
+          <span className="hint">{t("source")}</span>
+        </div>
+      </div>
       <p>
         {t(w.product || "unavailable")}
         {aged ? " · " + t("stale") : ""}
@@ -54,10 +71,27 @@ export function WeatherView({ w, ui }) {
       {!w.available && (
         <p className="notice">{t(w.reason || "incompleteWeather")}</p>
       )}
-      <p>
-        {t("mean")}: {n(w.meanTemperature)}
-        {t("celsius")} · {t("rainfall")}: {n(w.totalRainfall)} {t("mm")}
-      </p>
+      <div className="weather-metrics">
+        <div>
+          <span>
+            <Thermometer size={16} />
+            {t("mean")}
+          </span>
+          <strong>
+            {n(w.meanTemperature)}
+            <small>{t("celsius")}</small>
+          </strong>
+        </div>
+        <div>
+          <span>
+            <Droplets size={16} />
+            {t("rainfall")}
+          </span>
+          <strong>
+            {n(w.totalRainfall)} <small>{t("mm")}</small>
+          </strong>
+        </div>
+      </div>
       <p className="hint">
         {t("coverage")}: {date(w.coverageStart)} – {date(w.coverageEnd)} ·{" "}
         {n(w.completeDays)} / {n(w.expectedDays)} {t("days")}
@@ -130,86 +164,16 @@ export default function ResultView({
     span = Math.max(1, Date.parse(s.harvestEnd) - start);
   return (
     <div className="report" id="assessment-report">
-      <section className="card">
-        <div className="section-head">
-          <div>
-            <p className="eyebrow">{t("result")}</p>
-            <h2>
-              {t(s.crop)} · {t(s.season)} · {t(s.district)}
-            </h2>
-            <p>{s.variety}</p>
-          </div>
-          <div className="score">
-            <strong>
-              {n(r.reliabilityScore)}
-              <small>/ {n(100)}</small>
-            </strong>
-            <span>{t(r.reliabilityCategory)}</span>
-          </div>
-        </div>
-        <div className="print-only">
-          <h1>{t("report")}</h1>
-          {includeProfile && (
-            <p>
-              {user.displayName}
-              {plot
-                ? " · " +
-                  plot.name +
-                  (plot.area ? " · " + n(plot.area) + " " + t(plot.unit) : "")
-                : ""}
-            </p>
-          )}
-        </div>
-        <p className="hint">
-          {t("id")}: {r.id}
-          <br />
-          {t("createdAt")}: {date(r.createdAt)} · {t("completeness")}:{" "}
-          {n(r.assessmentCompleteness)}%
-        </p>
-        <p className="notice">{t("scoreNote")}</p>
-        <div className="metric-grid">
-          {Object.entries(r.parameterScores).map(([k, v]) => (
-            <div key={k}>
-              <span>{t(k)}</span>
-              <strong>
-                {v.weight ? n(v.score) : "—"} <small>× {n(v.weight)}</small>
-              </strong>
-            </div>
-          ))}
-        </div>
-        <p>
-          {t("ml")}:{" "}
-          <strong>
-            {t(
-              r.mlResult.available
-                ? r.mlResult.is_anomaly
-                  ? "mlAnomaly"
-                  : "mlNormal"
-                : "mlUnknown",
-            )}
-          </strong>
-        </p>
-        <p className="hint">
-          {t("modelVersion")}: {r.mlResult.model_version || "—"} ·{" "}
-          {t("anomalyScore")}: {n(r.mlResult.anomaly_score)}
-        </p>
-        {(!r.weatherAssessment.available || !r.mlResult.available) && (
-          <p className="notice">{t("incompleteWeather")}</p>
-        )}
-        <div className="actions no-print">
-          <button onClick={onPreview}>{t("preview")}</button>
-          <button onClick={() => window.print()}>{t("print")}</button>
-          <button onClick={onCsv}>{t("csv")}</button>
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={includeProfile}
-              onChange={(e) => setIncludeProfile(e.target.checked)}
-            />
-            {t("includeProfile")}
-          </label>
-        </div>
-      </section>
+      <ResultSummary
+        r={r}
+        ui={ui}
+        user={user}
+        plot={plot}
+        onPreview={onPreview}
+        onCsv={onCsv}
+        includeProfile={includeProfile}
+        setIncludeProfile={setIncludeProfile}
+      />
       <section className="card suggested-dates">
         <h2>{t("suggestedDates")}</h2>
         <p className="hint">{t("revisionIntro")}</p>
@@ -290,8 +254,23 @@ export default function ResultView({
           </div>
         </section>
       )}
-      <section className="card">
-        <h2>{t("stage")}</h2>
+      <section className="card conflict-card">
+        <div className="section-head">
+          <div className="panel-heading">
+            <span className="heading-icon">
+              <ShieldCheck size={22} />
+            </span>
+            <h2>{t("stage")}</h2>
+          </div>
+          <span className="issue-count">
+            {n(
+              r.conflicts.filter(
+                (c) => c.status !== "Compatible" && c.status !== "Unavailable",
+              ).length,
+            )}{" "}
+            {t("flaggedFields")}
+          </span>
+        </div>
         <div className="table-wrap">
           <table>
             <thead>
@@ -318,21 +297,48 @@ export default function ResultView({
                     </td>
                     <td>{n(c.deviationDays)}</td>
                   </tr>
-                  <tr>
-                    <td colSpan={5} className="hint">
-                      {t(
-                        c.status === "Unavailable"
-                          ? "incompleteWeather"
-                          : c.status === "Compatible"
-                            ? "compatibleExplanation"
-                            : "conflictExplanation",
-                      )}
-                    </td>
-                  </tr>
                 </React.Fragment>
               ))}
             </tbody>
           </table>
+        </div>
+        <div className="conflict-explanations">
+          <h3>{t("explanation")}</h3>
+          {r.conflicts.map((c) => (
+            <article
+              className={"field-explanation " + c.severity}
+              key={c.field}
+            >
+              <div>
+                <span className="field-icon">
+                  {c.status === "Compatible" ? (
+                    <ShieldCheck size={18} />
+                  ) : (
+                    <TriangleAlert size={18} />
+                  )}
+                </span>
+                <strong>{t(c.field)}</strong>
+                <span className={"badge " + c.severity}>{t(c.status)}</span>
+              </div>
+              <p>
+                {t(
+                  c.status === "Unavailable"
+                    ? "incompleteWeather"
+                    : c.status === "Compatible"
+                      ? "compatibleExplanation"
+                      : "conflictExplanation",
+                )}{" "}
+                {c.deviationDays > 0 ? (
+                  <>
+                    <strong>
+                      {t("deviation")}: {n(c.deviationDays)}
+                    </strong>
+                    .{" "}
+                  </>
+                ) : null}
+              </p>
+            </article>
+          ))}
         </div>
         <p className="hint">{t("coverageNote")}</p>
         <div className="timeline">
@@ -384,12 +390,19 @@ export default function ResultView({
           </div>
         ))}
       </section>
-      <WeatherView w={r.weatherAssessment} ui={ui} />
+      <div className="evidence-grid">
+        <WeatherView w={r.weatherAssessment} ui={ui} />
+        <section className="card reference-panel">
+          <div className="panel-heading">
+            <span className="heading-icon">
+              <BookOpen size={22} />
+            </span>
+            <h2>{t("referenceInfo")}</h2>
+          </div>
+          <ReferenceCard r={r.reference} ui={ui} />
+        </section>
+      </div>
       <AgronomicAdvisory result={r} ui={ui} />
-      <section className="card">
-        <h2>{t("referenceInfo")}</h2>
-        <ReferenceCard r={r.reference} ui={ui} />
-      </section>
     </div>
   );
 }

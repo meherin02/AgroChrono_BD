@@ -218,7 +218,19 @@
     "REQUEST_TIMEOUT": "The request timed out. Your input is retained; use Try again.",
     "suggestedDates": "Suggested dates to review",
     "recentRevisions": "Recent revisions",
-    "chooseDate": "Choose date"
+    "chooseDate": "Choose date",
+    "weight": "Weight",
+    "contribution": "Contribution",
+    "cropLocation": "Crop and location",
+    "stageDates": "Cultivation stage dates",
+    "flaggedFields": "fields to review",
+    "introLabel": "AgroChrono-BD · Crop calendar assessment",
+    "introTitle": "Check your cultivation plan before planting",
+    "introDescription": "Plan your crop’s planting, growth and harvest dates in one place. AgroChrono-BD compares your plan with available crop-calendar references and weather data, screens for unusual patterns with machine learning, and explains possible conflicts with a calendar reliability score.",
+    "introFeatures": "How AgroChrono-BD helps",
+    "introStages": "Stage-by-stage calendar checks",
+    "introMl": "ML anomaly screening",
+    "introWeather": "Weather and reference context"
   },
   "bn": {
     "brand": "এগ্রোক্রোনো-বিডি",
@@ -439,6 +451,18 @@
     "REQUEST_TIMEOUT": "অনুরোধের সময় শেষ হয়েছে। আপনার তথ্য রাখা আছে; আবার চেষ্টা করুন।",
     "suggestedDates": "যাচাই করার জন্য প্রস্তাবিত তারিখ",
     "recentRevisions": "সাম্প্রতিক সংশোধন",
-    "chooseDate": "ক্যালেন্ডার থেকে তারিখ বাছুন"
+    "chooseDate": "ক্যালেন্ডার থেকে তারিখ বাছুন",
+    "weight": "ওজন",
+    "contribution": "স্কোরে অবদান",
+    "cropLocation": "ফসল ও অবস্থান",
+    "stageDates": "চাষের পর্যায়ের তারিখ",
+    "flaggedFields": "টি ঘর যাচাই করুন",
+    "introLabel": "অ্যাগ্রোক্রোনো-বিডি · ফসলের সময়সূচি যাচাই",
+    "introTitle": "চাষ শুরুর আগেই আপনার পরিকল্পনা যাচাই করুন",
+    "introDescription": "ফসল বোনা বা রোপণ, বেড়ে ওঠা এবং কাটার তারিখ এক জায়গায় পরিকল্পনা করুন। অ্যাগ্রোক্রোনো-বিডি উপলব্ধ ফসলের সময়সূচি ও আবহাওয়ার তথ্যের সঙ্গে আপনার পরিকল্পনা মিলিয়ে দেখে, মেশিন লার্নিং দিয়ে অস্বাভাবিক ধরন শনাক্ত করে এবং সম্ভাব্য অসংগতির ব্যাখ্যাসহ সময়সূচির নির্ভরযোগ্যতার স্কোর দেখায়।",
+    "introFeatures": "অ্যাগ্রোক্রোনো-বিডি যেভাবে সাহায্য করে",
+    "introStages": "চাষের প্রতিটি ধাপের সময় যাচাই",
+    "introMl": "মেশিন লার্নিং দিয়ে অসংগতি শনাক্ত",
+    "introWeather": "আবহাওয়া ও ফসলের তথ্যের সঙ্গে তুলনা"
   }
 }
