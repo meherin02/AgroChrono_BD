@@ -2,6 +2,32 @@
 
 Farmer crop-calendar assessment, private planning and forecast advisories in Bengali and English. React/Vite frontend, Express Node API, durable MongoDB and the existing accepted Isolation Forest FastAPI inference. No paid API key, LLM, OTP service or billing resource is required. No fabricated agricultural accuracy is claimed.
 
+## Live application
+
+- **Website:** [agrochronobd-sigma.vercel.app](https://agrochronobd-sigma.vercel.app/)
+- **ML service:** [ml-service-agro.vercel.app](https://ml-service-agro.vercel.app/)
+
+Farmers use the website to register, plan crop calendars, view assessments and manage activities. The Python ML service is called by the application API using an internal service token; opening its URL directly may return an authentication error.
+
+## Tools and technologies
+
+| Area | Tools | Purpose |
+| --- | --- | --- |
+| Frontend | JavaScript, React 18, Vite | Farmer dashboard, forms, calendars and assessment views |
+| UI and styling | CSS, Tailwind CSS, Lucide React | Responsive layout, styling and icons |
+| Application API | Node.js, Express 4, Axios, dotenv | Authentication, validation, assessment coordination and service requests |
+| Database | MongoDB, Mongoose | Farmer accounts, private calendars, results, activities and weather cache |
+| ML API | Python, FastAPI, Pydantic, Uvicorn | Validated inference requests and model serving |
+| Machine learning | scikit-learn Isolation Forest, NumPy, pandas, SciPy, joblib | Anomaly screening, numerical processing and saved model artifacts |
+| Weather data | Open-Meteo historical, forecast and climate APIs | District weather context and clearly labelled climate projections |
+| Agricultural references | Stored BAMIS, BRRI and BARI references | Crop-season windows, growth duration and threshold comparisons |
+| Languages | Shared English/Bangla JSON dictionaries, JavaScript Intl | Translated interface, dates and numbers |
+| Testing and formatting | Node.js test runner, Playwright, Python unittest, Prettier | API and browser checks, inference checks and code formatting |
+| Deployment and workflow | Git, GitHub, GitHub Actions, Vercel | Version control, CI and separate website/API and ML deployments |
+| Optional local environment | Docker Compose, MongoDB Community | Local services and persistent development storage |
+
+The reliability score expresses calendar compatibility with the stored references and available weather. Isolation Forest provides anomaly screening; the displayed reliability score is not measured ML accuracy or a harvest-success probability.
+
 ## Local setup
 
 Use Node 24, Python 3.14 and MongoDB Community. From the repository root:
@@ -42,7 +68,7 @@ Browser tests start their own Node/Python/Vite services on 5019/8019/4179, use g
 
 ## Deployment and operations
 
-Vercel topology: repository root for frontend + Node API; ml-service for FastAPI; external durable free MongoDB. Exact roots, env settings, deployment order, health/cold-start checks and rollback: [Vercel deployment](docs/VERCEL-DEPLOYMENT.md). No cloud project has been published by the agent.
+Vercel topology: repository root for frontend + Node API; ml-service for FastAPI; external durable MongoDB. Public application and service links are listed above. Exact roots, env settings, deployment order, health/cold-start checks and rollback: [Vercel deployment](docs/VERCEL-DEPLOYMENT.md).
 
 - [Implementation inventory](docs/IMPLEMENTATION-INVENTORY.md)
 - [Farmer behavior/security](docs/FARMER-APPLICATION.md)
