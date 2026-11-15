@@ -1,0 +1,5 @@
+data/
+__pycache__/
+model/train_model.py
+model/retrain_model.py
+test_inference.py

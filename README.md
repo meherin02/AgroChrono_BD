@@ -1,105 +1,56 @@
 # AgroChrono-BD
-## AI/ML-Assisted Agricultural Crop-Calendar Validation & Reliability Assessment Platform
 
-**Target Country:** Bangladesh  
-**Architecture:** MERN Stack + Python FastAPI Microservice + Open-Meteo Weather API  
-**Core Model:** Scikit-learn Isolation Forest (Unsupervised Anomaly Detection)  
-**Reference Sources:** Bangladesh Agro-Meteorological Information Service (BAMIS - DAE), Bangladesh Rice Research Institute (BRRI), Bangladesh Agricultural Research Council (BARC)
+Farmer crop-calendar assessment, private planning and forecast advisories in Bengali and English. React/Vite frontend, Express Node API, durable MongoDB and the existing accepted Isolation Forest FastAPI inference. No paid API key, LLM, OTP service or billing resource is required. No fabricated agricultural accuracy is claimed.
 
----
+## Local setup
 
-## 🌾 1. Overview & Innovation
+Use Node 24, Python 3.14 and MongoDB Community. From the repository root:
 
-Unlike conventional crop-calendar systems that only display static agricultural recommendations, **AgroChrono-BD** accepts a **farmer's own proposed cultivation timeline** and evaluates whether that schedule is viable and reliable before planting starts.
-
-The platform performs:
-1. **Input Validation**: Rejects impossible chronological sequences (e.g. planting after harvest, growth before planting, negative durations).
-2. **Regional Benchmark Matching**: Correlates proposed dates with trusted regional crop windows (Aman, Boro, Aus rice, Rabi wheat, potato, mustard).
-3. **Agro-Climatic Weather Retrieval**: Leverages Open-Meteo Historical Archive & Climate telemetry for the exact cultivation dates and district.
-4. **AI/ML Anomaly Screening**: Uses an **Isolation Forest** unsupervised learning model to detect multi-dimensional timeline anomalies.
-5. **Field-Specific Conflict Detection**: Pinpoints exact deviations in Planting Window, Growth Duration, and Harvest Window.
-6. **Weighted Reliability Scoring**: Generates an explainable score:
-   $$R = 0.30P + 0.20G + 0.25H + 0.25W$$
-   *(With dynamic weight renormalization and completeness tracking if weather is missing)*.
-7. **Suggested Calendar Correction**: Formulates reference-aligned dates that farmers can apply with one click to re-analyze immediately.
-
----
-
-## 🏗️ 2. System Architecture
-
-```text
-               FARMER (React.js + Tailwind UI)
-                          │
-                          ▼
-            EXPRESS BACKEND (Port 5000)
-             - Input Sequence Validator
-             - Analysis Orchestrator
-             - Conflict Identification Engine
-             - Weighted Reliability Calculator
-                          │
-        ┌─────────────────┴─────────────────┐
-        ▼                                   ▼
- OPEN-METEO WEATHER API             MONGODB / DATA STORE
- (Historical & Climate Normal)      (Reference & History)
-        │                                   │
-        └─────────────────┬─────────────────┘
-                          │ (Feature Vector: DOY, Duration, Temp, Rain)
-                          ▼
-             PYTHON FASTAPI MICROSERVICE (Port 8001)
-             - Scikit-learn Isolation Forest
-             - Anomaly Score & Feature Deviations
+```
+npm ci
+npm --prefix backend ci
+npm --prefix frontend ci
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r ml-service/requirements.txt
 ```
 
----
+On Linux use .venv/bin/python. Copy backend/.env.example to backend/.env and fill MONGODB_URI, MONGODB_DB_NAME, SESSION_SECRET (32+ random characters), APP_ORIGIN and matching ML_SERVICE_TOKEN. No automatic embedded database/JSON fallback. Start an ordinary local MongoDB daemon; keep its files outside source control.
 
-## 🚀 3. Quick Start Guide
+Run Python from repository root in a separate PowerShell terminal:
 
-### Prerequisites
-- Node.js (v18+)
-- Python (3.10+)
-
-### Step 1: Start the Python ML Service
-```bash
-cd ml-service
-python -m pip install -r requirements.txt
-python model/train_model.py
-python -m uvicorn main:app --port 8001
 ```
-*Health endpoint: `http://127.0.0.1:8001/health`*
-
-### Step 2: Start the Express Backend
-```bash
-cd backend
-npm install
-node src/server.js
+$env:ML_SERVICE_TOKEN='your-own-local-token'
+.venv\Scripts\python.exe -m uvicorn main:app --app-dir ml-service --host 127.0.0.1 --port 8001
 ```
-*Health endpoint: `http://localhost:5000/api/health`*
 
-### Step 3: Start the React Frontend
-```bash
-cd frontend
-npm install
-npm run dev
+Start Node in another terminal from backend (`npm start`); this loads backend/.env. Start frontend from frontend (`npm run dev`), then use http://127.0.0.1:3000 and exactly that APP_ORIGIN. Browser API requests use /api. Never run training to start or deploy the accepted model. Both original joblib artifacts are already included.
+
+## Verification
+
+Use a separate local MongoDB on port 27029, or set TEST_MONGODB_URI to an isolated test server. Tests generate new database names and never use the application DB.
+
 ```
-*Open in browser: `http://localhost:3000`*
+npm test
+.venv\Scripts\python.exe ml-service/test_inference.py
+npm run test:translations
+npm run build
+npx playwright install chromium
+npm run test:browser
+```
 
----
+Browser tests start their own Node/Python/Vite services on 5019/8019/4179, use genuine inference and isolated MongoDB, and substitute clearly labelled weather fixtures for deterministic transport testing. Separate live weather smoke evidence, when run, is not agricultural validation. Logs/screenshots/PDF output are under .local/evidence and excluded from Git. CI runs tests without retraining.
 
-## 🧪 4. Testing Presets Included in the UI
+## Deployment and operations
 
-The application includes 3 instant test presets directly on the header:
-- **🌾 Ideal Aman (Rangpur)**: Fully aligned with BRRI dhan49 reference windows $\rightarrow$ Score: ~98% (High Reliability).
-- **⚠️ Delayed Conflict**: Late planting and late harvest past regional cutoffs $\rightarrow$ Flagged conflicts with risk explanations.
-- **🚨 ML Anomaly Sample**: Abnormal 200-day growth duration $\rightarrow$ Triggers the Isolation Forest anomaly detector.
+Vercel topology: repository root for frontend + Node API; ml-service for FastAPI; external durable free MongoDB. Exact roots, env settings, deployment order, health/cold-start checks and rollback: [Vercel deployment](docs/VERCEL-DEPLOYMENT.md). No cloud project has been published by the agent.
 
----
+- [Implementation inventory](docs/IMPLEMENTATION-INVENTORY.md)
+- [Farmer behavior/security](docs/FARMER-APPLICATION.md)
+- [Seven-diagram mapping](docs/FEATURE-TRACEABILITY.md)
+- [Environment table](docs/ENVIRONMENT-VARIABLES.md)
+- [Migration/backup/restore](docs/DATA-MIGRATION.md)
+- [Actual verification](docs/VERIFICATION.md)
+- [Handover](docs/FINAL-HANDOVER.md)
+- [Preserved model baseline](docs/ML-BASELINE.json)
 
-## 📊 5. Verified Bangladesh Datasets
-
-Included in `backend/src/data/referenceCalendars.json`:
-- **Rice (Aman)**: Rangpur, Rajshahi, Mymensingh, Dhaka (BRRI dhan49, dhan51, dhan75, dhan87).
-- **Rice (Boro)**: Mymensingh, Rangpur (BRRI dhan28, dhan29, dhan89).
-- **Rice (Aus)**: Rangpur, Barishal (BRRI dhan48, Parija).
-- **Wheat (Rabi)**: Dinajpur, Rajshahi (BARI Gom-25, Gom-33).
-- **Potato (Rabi)**: Munshiganj, Bogura (Diamant, Cardinal, Asterix).
-- **Mustard (Rabi)**: Manikganj, Tangail (BARI Sarisha-14, Sarisha-17).
+Optional Docker Compose is local development only (root build contexts, persistent Mongo volume, matching tokens). Vercel does not depend on Docker. Do not commit .env, private backups, data stores, session/service tokens or local databases.

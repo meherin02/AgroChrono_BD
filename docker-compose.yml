@@ -1,32 +1,25 @@
-version: '3.8'
-
 services:
+  mongo:
+    image: mongo:8
+    volumes: [agro-data:/data/db]
   ml-service:
-    build: ./ml-service
-    container_name: agrochrono-ml
-    ports:
-      - "8001:8001"
-    restart: unless-stopped
-
-  backend:
-    build: ./backend
-    container_name: agrochrono-backend
-    ports:
-      - "5000:5000"
+    build: { context: ., dockerfile: ml-service/Dockerfile }
     environment:
-      - PORT=5000
-      - ML_SERVICE_URL=http://ml-service:8001
-      # Optional: set your MongoDB Atlas connection string below:
-      # - MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/agrochrono
-    depends_on:
-      - ml-service
-    restart: unless-stopped
-
+      ML_SERVICE_TOKEN: ${ML_SERVICE_TOKEN:?Set a local internal token}
+  backend:
+    build: { context: ., dockerfile: backend/Dockerfile }
+    environment:
+      PORT: 5000
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB_NAME: agrochrono
+      SESSION_SECRET: ${SESSION_SECRET:?Set at least 32 random characters}
+      APP_ORIGIN: http://localhost:3000
+      ML_SERVICE_URL: http://ml-service:8001
+      ML_SERVICE_TOKEN: ${ML_SERVICE_TOKEN:?Set a local internal token}
+    depends_on: [mongo, ml-service]
   frontend:
-    build: ./frontend
-    container_name: agrochrono-frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    restart: unless-stopped
+    build: { context: ., dockerfile: frontend/Dockerfile }
+    ports: ["3000:80"]
+    depends_on: [backend]
+volumes:
+  agro-data:

@@ -1,0 +1,14 @@
+.git/
+.venv/
+.local/
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+backend/public/
+backend/data/
+ml-service/
+test/
+docs/
+**/.env
+**/.env.*
+!**/.env.example

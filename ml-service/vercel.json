@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "main.py": {
+      "maxDuration": 60,
+      "excludeFiles": "{data/**,model/train_model.py,model/retrain_model.py,test_inference.py,__pycache__/**}"
+    }
+  }
+}

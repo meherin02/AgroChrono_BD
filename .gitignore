@@ -48,8 +48,7 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
-# Netlify & Archives
-.netlify/
+# Archives
 *.zip
 
 # Editor / OS
@@ -57,3 +56,9 @@ lerna-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+.vercel/
+.venv/
+.local/
+playwright-report/
+test-results/

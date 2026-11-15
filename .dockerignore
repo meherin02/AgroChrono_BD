@@ -1,0 +1,14 @@
+.git
+.venv
+.local
+**/node_modules
+**/__pycache__
+**/.env
+**/.env.*
+!**/.env.example
+frontend/dist
+backend/public
+backend/data
+ml-service/data
+ml-service/model/train_model.py
+ml-service/model/retrain_model.py

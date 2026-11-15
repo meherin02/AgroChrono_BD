@@ -1,0 +1,19 @@
+{
+  "backendTestsPassed": 19,
+  "browserJourneysPassed": 6,
+  "mlUnittestMethodsPassed": 3,
+  "mlParityVectors": 4,
+  "translationKeysPerLanguage": 219,
+  "literalUiTranslationCalls": 143,
+  "liveHistoricalDays": 134,
+  "liveForecastDays": 7,
+  "linuxPackageEstimateMiB": 250.68,
+  "localFirstInferenceSeconds": 8.044,
+  "hashes": {
+    "anomaly_model.joblib": "62bbefa0a03655222b31b04ed570d03fe6e6cbb98868747d5bbb5c27a2492167",
+    "feature_stats.joblib": "a1245471901763d9158a93a2066746f5967a3a0f14c8d8d99f05e785d71e5c01"
+  },
+  "cloudDeploymentPerformed": false,
+  "agriculturalAccuracyClaim": false,
+  "cleanDependencyInstallsPassed": true
+}

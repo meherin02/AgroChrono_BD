@@ -1,0 +1,211 @@
+{
+  "python": "3.14.6",
+  "versions": {
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.4",
+    "pandas": "3.1.1",
+    "joblib": "1.6.0",
+    "fastapi": "0.163.1",
+    "pydantic": "2.14.3",
+    "uvicorn": "0.54.0",
+    "scipy": "1.18.1"
+  },
+  "hashes": {
+    "anomaly_model.joblib": "62bbefa0a03655222b31b04ed570d03fe6e6cbb98868747d5bbb5c27a2492167",
+    "feature_stats.joblib": "a1245471901763d9158a93a2066746f5967a3a0f14c8d8d99f05e785d71e5c01"
+  },
+  "cases": [
+    {
+      "input": {
+        "planting_doy": 205,
+        "growth_days": 125,
+        "harvest_doy": 330,
+        "mean_temperature": 29.2,
+        "total_rainfall": 950.0
+      },
+      "output": {
+        "is_anomaly": false,
+        "anomaly_score": -0.1049,
+        "normalized_anomaly_index": 0.29,
+        "prediction_label": "Normal Pattern",
+        "feature_deviations": {
+          "planting_doy": {
+            "value": 205,
+            "mean": 265.1,
+            "z_score": -0.71,
+            "status": "normal"
+          },
+          "growth_days": {
+            "value": 125,
+            "mean": 122.0,
+            "z_score": 0.13,
+            "status": "normal"
+          },
+          "harvest_doy": {
+            "value": 330,
+            "mean": 180.9,
+            "z_score": 1.25,
+            "status": "normal"
+          },
+          "mean_temperature": {
+            "value": 29.2,
+            "mean": 25.2,
+            "z_score": 0.99,
+            "status": "normal"
+          },
+          "total_rainfall": {
+            "value": 950.0,
+            "mean": 458.6,
+            "z_score": 1.14,
+            "status": "normal"
+          }
+        },
+        "model_version": "isolation-forest-v1.0"
+      }
+    },
+    {
+      "input": {
+        "planting_doy": 205,
+        "growth_days": 220,
+        "harvest_doy": 50,
+        "mean_temperature": 42.0,
+        "total_rainfall": 30.0
+      },
+      "output": {
+        "is_anomaly": true,
+        "anomaly_score": 0.0981,
+        "normalized_anomaly_index": 0.696,
+        "prediction_label": "Unusual Pattern Detected",
+        "feature_deviations": {
+          "planting_doy": {
+            "value": 205,
+            "mean": 265.1,
+            "z_score": -0.71,
+            "status": "normal"
+          },
+          "growth_days": {
+            "value": 220,
+            "mean": 122.0,
+            "z_score": 4.18,
+            "status": "unusual"
+          },
+          "harvest_doy": {
+            "value": 50,
+            "mean": 180.9,
+            "z_score": -1.1,
+            "status": "normal"
+          },
+          "mean_temperature": {
+            "value": 42.0,
+            "mean": 25.2,
+            "z_score": 4.16,
+            "status": "unusual"
+          },
+          "total_rainfall": {
+            "value": 30.0,
+            "mean": 458.6,
+            "z_score": -0.99,
+            "status": "normal"
+          }
+        },
+        "model_version": "isolation-forest-v1.0"
+      }
+    },
+    {
+      "input": {
+        "planting_doy": 350,
+        "growth_days": 110,
+        "harvest_doy": 80,
+        "mean_temperature": 22.0,
+        "total_rainfall": 60.0
+      },
+      "output": {
+        "is_anomaly": false,
+        "anomaly_score": -0.0154,
+        "normalized_anomaly_index": 0.469,
+        "prediction_label": "Normal Pattern",
+        "feature_deviations": {
+          "planting_doy": {
+            "value": 350,
+            "mean": 265.1,
+            "z_score": 1.0,
+            "status": "normal"
+          },
+          "growth_days": {
+            "value": 110,
+            "mean": 122.0,
+            "z_score": -0.51,
+            "status": "normal"
+          },
+          "harvest_doy": {
+            "value": 80,
+            "mean": 180.9,
+            "z_score": -0.85,
+            "status": "normal"
+          },
+          "mean_temperature": {
+            "value": 22.0,
+            "mean": 25.2,
+            "z_score": -0.79,
+            "status": "normal"
+          },
+          "total_rainfall": {
+            "value": 60.0,
+            "mean": 458.6,
+            "z_score": -0.92,
+            "status": "normal"
+          }
+        },
+        "model_version": "isolation-forest-v1.0"
+      }
+    },
+    {
+      "input": {
+        "planting_doy": 1,
+        "growth_days": 1,
+        "harvest_doy": 366,
+        "mean_temperature": 0.0,
+        "total_rainfall": 0.0
+      },
+      "output": {
+        "is_anomaly": true,
+        "anomaly_score": 0.1383,
+        "normalized_anomaly_index": 0.777,
+        "prediction_label": "Unusual Pattern Detected",
+        "feature_deviations": {
+          "planting_doy": {
+            "value": 1,
+            "mean": 265.1,
+            "z_score": -3.12,
+            "status": "unusual"
+          },
+          "growth_days": {
+            "value": 1,
+            "mean": 122.0,
+            "z_score": -5.15,
+            "status": "unusual"
+          },
+          "harvest_doy": {
+            "value": 366,
+            "mean": 180.9,
+            "z_score": 1.55,
+            "status": "normal"
+          },
+          "mean_temperature": {
+            "value": 0.0,
+            "mean": 25.2,
+            "z_score": -6.24,
+            "status": "unusual"
+          },
+          "total_rainfall": {
+            "value": 0.0,
+            "mean": 458.6,
+            "z_score": -1.06,
+            "status": "normal"
+          }
+        },
+        "model_version": "isolation-forest-v1.0"
+      }
+    }
+  ]
+}

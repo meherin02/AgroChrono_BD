@@ -2,7 +2,8 @@ import os
 import joblib
 import numpy as np
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import Request
+import hmac
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 
@@ -12,14 +13,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Enable CORS for Express and direct testing
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Inference is called by the Node API, never directly by a browser.
+@app.middleware("http")
+async def service_auth(request: Request, call_next):
+    from fastapi.responses import JSONResponse
+    token = os.environ.get("ML_SERVICE_TOKEN", "")
+    if (os.environ.get("VERCEL") or os.environ.get("ENVIRONMENT") == "production") and not token:
+        return JSONResponse(status_code=503, content={"detail": "Service token configuration missing"})
+    if token and not hmac.compare_digest(request.headers.get("X-Service-Token", ""), token):
+        return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+    return await call_next(request)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(base_dir, "model", "anomaly_model.joblib")
@@ -44,14 +47,14 @@ class CalendarFeatures(BaseModel):
     planting_doy: int = Field(..., ge=1, le=366, description="Day of year for planting start (1-366)")
     growth_days: int = Field(..., gt=0, le=400, description="Growth duration in days")
     harvest_doy: int = Field(..., ge=1, le=366, description="Day of year for harvest start (1-366)")
-    mean_temperature: float = Field(..., description="Average cultivation temperature in Celsius")
-    total_rainfall: float = Field(..., ge=0.0, description="Total cultivation rainfall in mm")
+    mean_temperature: float = Field(..., allow_inf_nan=False, description="Average cultivation temperature in Celsius")
+    total_rainfall: float = Field(..., ge=0.0, allow_inf_nan=False, description="Total cultivation rainfall in mm")
 
 
 @app.get("/health")
 def health_check():
     return {
-        "status": "healthy",
+        "status": "healthy" if model is not None else "unavailable",
         "service": "AgroChrono-BD ML Microservice",
         "model_loaded": model is not None,
         "model_version": "isolation-forest-v1.0"
@@ -119,7 +122,7 @@ def predict_anomaly(features: CalendarFeatures):
             "model_version": "isolation-forest-v1.0"
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Inference error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Inference unavailable")
 
 
 if __name__ == "__main__":

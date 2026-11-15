@@ -1,0 +1,26 @@
+{
+  "name": "agrochrono-vercel",
+  "private": true,
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test",
+    "test:browser": "playwright test",
+    "test:translations": "node scripts/check-translations.cjs",
+    "backup": "node scripts/maintenance.cjs backup",
+    "restore": "node scripts/maintenance.cjs restore",
+    "format:check": "prettier --check api backend/src/app.js backend/src/server.js backend/src/config backend/src/routes backend/src/services backend/test frontend/src frontend/vite.config.js shared scripts test playwright.config.cjs vercel.json ml-service/vercel.json"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "prettier": "3.10.1"
+  }
+}

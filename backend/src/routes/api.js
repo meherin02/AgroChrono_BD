@@ -1,379 +1,607 @@
-const express = require('express');
-const router = express.Router();
-const referenceCalendars = require('../data/referenceCalendars.json');
-const districts = require('../data/bangladeshDistricts');
-const { getCultivationWeather } = require('../services/weatherService');
-const { predictAnomaly, checkMLHealth } = require('../services/mlService');
-const { analyzeConflicts, getDayOfYear, getDaysBetween } = require('../services/conflictEngine');
-const { calculateReliabilityScore } = require('../services/reliabilityCalculator');
-const db = require('../config/db');
-
-// Supported crop & season options
-const SUPPORTED_CROPS = [
-  { id: 'Rice', name: 'Rice (ধান)', seasons: ['Aman', 'Boro', 'Aus'] },
-  { id: 'Wheat', name: 'Wheat (গম)', seasons: ['Rabi'] },
-  { id: 'Potato', name: 'Potato (আলু)', seasons: ['Rabi'] },
-  { id: 'Mustard', name: 'Mustard (সরিষা)', seasons: ['Rabi'] }
-];
-
-/**
- * 1. Health check endpoint
- */
-router.get('/health', async (req, res) => {
-  const mlHealth = await checkMLHealth();
-  const dbStatus = db.getDatabaseStatus();
-  res.json({
-    status: 'ok',
-    service: 'AgroChrono-BD Express API',
-    uptime: process.uptime(),
-    database: dbStatus,
-    mlMicroservice: mlHealth,
-    timestamp: new Date().toISOString()
-  });
-});
-
-/**
- * 2. Form Options endpoint
- */
-router.get('/options', (req, res) => {
-  res.json({
-    crops: SUPPORTED_CROPS,
-    districts: districts.map(d => ({ id: d.id, name: d.name, division: d.division, aez: d.aez })),
-    referenceSummary: referenceCalendars.map(r => ({
-      id: r.id,
-      crop: r.crop,
-      season: r.season,
-      district: r.district,
-      varieties: r.varieties,
-      plantingWindow: r.plantingWindow.label,
-      growthDuration: `${r.growthDurationDays.min}-${r.growthDurationDays.max} days`,
-      harvestWindow: r.harvestWindow.label
-    }))
-  });
-});
-
-/**
- * 3. Validation helper & endpoint
- */
-function validateFarmerInput(data) {
-  const errors = [];
-
-  const requiredFields = [
-    'crop', 'district', 'season',
-    'plantingStart', 'plantingEnd',
-    'growthStart', 'growthEnd',
-    'harvestStart', 'harvestEnd'
-  ];
-
-  for (const field of requiredFields) {
-    if (!data[field] || String(data[field]).trim() === '') {
-      errors.push(`Missing required field: ${field}`);
-    }
-  }
-
-  if (errors.length > 0) {
-    return { valid: false, errors };
-  }
-
-  // Crop support check
-  const cropObj = SUPPORTED_CROPS.find(c => c.id.toLowerCase() === data.crop.toLowerCase());
-  if (!cropObj) {
-    errors.push(`Crop "${data.crop}" is currently unsupported. Supported crops: ${SUPPORTED_CROPS.map(c => c.id).join(', ')}`);
-  } else if (!cropObj.seasons.map(s => s.toLowerCase()).includes(data.season.toLowerCase())) {
-    errors.push(`Season "${data.season}" is invalid for ${data.crop}. Supported seasons: ${cropObj.seasons.join(', ')}`);
-  }
-
-  // Parse dates
-  const pStart = new Date(data.plantingStart);
-  const pEnd = new Date(data.plantingEnd);
-  const gStart = new Date(data.growthStart);
-  const gEnd = new Date(data.growthEnd);
-  const hStart = new Date(data.harvestStart);
-  const hEnd = new Date(data.harvestEnd);
-
-  const dates = [
-    { label: 'Planting Start', val: pStart },
-    { label: 'Planting End', val: pEnd },
-    { label: 'Growth Start', val: gStart },
-    { label: 'Growth End', val: gEnd },
-    { label: 'Harvest Start', val: hStart },
-    { label: 'Harvest End', val: hEnd }
-  ];
-
-  for (const d of dates) {
-    if (isNaN(d.val.getTime())) {
-      errors.push(`Invalid date format for ${d.label}`);
-    }
-  }
-
-  if (errors.length > 0) return { valid: false, errors };
-
-  // Chronological Sequence Checks
-  if (pStart > pEnd) {
-    errors.push('Planting start date cannot be later than planting end date.');
-  }
-
-  if (gStart > gEnd) {
-    errors.push('Growth period start date cannot be later than growth end date.');
-  }
-
-  if (hStart > hEnd) {
-    errors.push('Harvest start date cannot be later than harvest end date.');
-  }
-
-  if (pStart > hStart) {
-    errors.push('Invalid timeline sequence: Planting cannot begin after harvest starts.');
-  }
-
-  if (gStart < pStart) {
-    errors.push('Invalid sequence: Vegetative growth phase cannot begin before planting starts.');
-  }
-
-  if (hStart < pEnd) {
-    errors.push('Harvest cannot begin before planting period concludes.');
-  }
-
-  const totalDays = Math.round((hEnd - pStart) / (1000 * 60 * 60 * 24));
-  if (totalDays < 45) {
-    errors.push(`Total cultivation duration (${totalDays} days) is unrealistically brief for field crops.`);
-  } else if (totalDays > 320) {
-    errors.push(`Total cultivation duration (${totalDays} days) exceeds annual agricultural cycle.`);
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-    totalDurationDays: totalDays
-  };
+const express = require("express"),
+  router = express.Router(),
+  db = require("../config/db"),
+  a = require("../services/auth");
+const { validate, crops, validDate } = require("../services/validation"),
+  districts = require("../data/bangladeshDistricts");
+const { analyze, references, findReference } = require("../services/analysis"),
+  { checkMLHealth } = require("../services/mlService"),
+  { getForecast } = require("../services/weatherService");
+const wrap = (fn) => (req, res, next) =>
+  Promise.resolve(fn(req, res, next)).catch(next);
+const clean = (d) => {
+  if (!d) return d;
+  const { _id, ownerId, ...rest } = d;
+  return rest;
+};
+async function own(req, id) {
+  const r = await (
+    await db.collection("results")
+  ).findOne({ id, ownerId: req.session.ownerId });
+  if (!r) throw a.fail(404, "NOT_FOUND");
+  return r;
 }
-
-router.post('/validate', (req, res) => {
-  const result = validateFarmerInput(req.body);
-  if (!result.valid) {
-    return res.status(400).json({ success: false, errors: result.errors });
-  }
-  res.json({ success: true, message: 'Calendar input dates and logical sequence are valid.', totalDurationDays: result.totalDurationDays });
-});
-
-/**
- * 4. Weather info endpoint
- */
-router.get('/weather', async (req, res) => {
-  const { district, season, startDate, endDate, crop } = req.query;
-  const ref = findReference(crop || 'Rice', season || 'Aman', district || 'Rangpur');
-  const weather = await getCultivationWeather(district, season, startDate, endDate, ref);
-  res.json(weather);
-});
-
-/**
- * 5. Reference crop calendar lookup
- */
-function findReference(crop, season, district) {
-  // Direct match
-  let match = referenceCalendars.find(
-    r => r.crop.toLowerCase() === (crop || '').toLowerCase() &&
-         r.season.toLowerCase() === (season || '').toLowerCase() &&
-         r.district.toLowerCase() === (district || '').toLowerCase()
-  );
-
-  // Fallback to same crop & season if district is adjacent
-  if (!match) {
-    match = referenceCalendars.find(
-      r => r.crop.toLowerCase() === (crop || '').toLowerCase() &&
-           r.season.toLowerCase() === (season || '').toLowerCase()
-    );
-  }
-
-  return match;
+function bodyOnly(body, keys) {
+  if (
+    !body ||
+    typeof body !== "object" ||
+    Array.isArray(body) ||
+    Object.keys(body).some((k) => !keys.includes(k))
+  )
+    throw a.fail(400, "UNEXPECTED_FIELD");
 }
-
-router.get('/reference', (req, res) => {
+router.get(
+  "/health",
+  wrap(async (req, res) => {
+    let database;
+    try {
+      await db.connectDB();
+      database = { connected: true };
+    } catch {
+      database = { connected: false };
+    }
+    const ml = await checkMLHealth(),
+      configuration = Boolean(
+        process.env.SESSION_SECRET?.length >= 32 &&
+        process.env.APP_ORIGIN &&
+        (process.env.NODE_ENV !== "production" ||
+          (process.env.ML_SERVICE_URL && process.env.ML_SERVICE_TOKEN)),
+      );
+    res
+      .status(
+        database.connected && configuration && ml.model_loaded ? 200 : 503,
+      )
+      .json({
+        status:
+          database.connected && configuration && ml.model_loaded
+            ? "ready"
+            : "degraded",
+        configurationReady: configuration,
+        database,
+        mlMicroservice: ml,
+      });
+  }),
+);
+router.get("/options", (req, res) =>
+  res.json({ crops, districts, references }),
+);
+router.get("/reference", (req, res) => {
   const { crop, season, district } = req.query;
-  const match = findReference(crop, season, district);
-  if (!match) {
-    return res.status(404).json({
-      error: `No verified reference calendar found for ${crop} in ${season} season (${district || 'All Districts'}).`,
-      availableOptions: referenceCalendars.map(r => `${r.crop} - ${r.season} (${r.district})`)
-    });
-  }
-  res.json(match);
+  const found = findReference(crop, season, district);
+  if (!found) return res.status(404).json({ error: "REFERENCE_UNAVAILABLE" });
+  res.json(found);
 });
-
-/**
- * 6. Complete Analysis Controller (The core orchestrator)
- */
-async function runCompleteAnalysis(submission) {
-  // Step A: Input validation
-  const validation = validateFarmerInput(submission);
-  if (!validation.valid) {
-    const err = new Error(validation.errors.join('; '));
-    err.status = 400;
-    err.details = validation.errors;
-    throw err;
-  }
-
-  // Step B: Reference Lookup
-  const reference = findReference(submission.crop, submission.season, submission.district);
-  if (!reference) {
-    const err = new Error(`Unsupported combination: No agricultural reference record exists for ${submission.crop} (${submission.season}) in ${submission.district}.`);
-    err.status = 404;
-    throw err;
-  }
-
-  // Step C: Weather Integration
-  const weather = await getCultivationWeather(
-    submission.district,
-    submission.season,
-    submission.plantingStart,
-    submission.harvestEnd,
-    reference
-  );
-
-  // Step D: Feature Engineering for Python ML
-  const plantingDOY = getDayOfYear(submission.plantingStart);
-  const harvestDOY = getDayOfYear(submission.harvestStart);
-  const growthDays = submission.growthStart && submission.growthEnd
-    ? getDaysBetween(submission.growthStart, submission.growthEnd)
-    : getDaysBetween(submission.plantingEnd, submission.harvestStart);
-
-  const mlFeatures = {
-    planting_doy: plantingDOY,
-    growth_days: growthDays,
-    harvest_doy: harvestDOY,
-    mean_temperature: weather.meanTemperature,
-    total_rainfall: weather.totalRainfall
-  };
-
-  // Step E: Python ML Microservice Anomaly Screening
-  const mlResult = await predictAnomaly(mlFeatures);
-
-  // Step F: Field-Specific Conflict Detection Engine
-  const conflictAnalysis = analyzeConflicts(submission, reference, weather);
-
-  // Step G: Reliability Calculator
-  const reliability = calculateReliabilityScore(
-    conflictAnalysis.rawScores,
-    weather.available,
-    mlResult
-  );
-
-  // Step H: Save submission and results in Database
-  const savedSubmission = await db.saveSubmission(submission);
-  
-  const finalResult = {
-    submissionId: savedSubmission.id,
-    submission,
-    reference: {
-      id: reference.id,
-      crop: reference.crop,
-      season: reference.season,
-      district: reference.district,
-      varieties: reference.varieties,
-      plantingWindow: reference.plantingWindow.label,
-      growthDurationDays: reference.growthDurationDays,
-      harvestWindow: reference.harvestWindow.label,
-      sourceName: reference.sourceName,
-      sourceUrl: reference.sourceUrl,
-      lastUpdated: reference.lastUpdated
-    },
-    reliabilityScore: reliability.score,
-    reliabilityCategory: reliability.category,
-    badgeClass: reliability.badgeClass,
-    assessmentCompleteness: reliability.assessmentCompleteness,
-    parameterScores: reliability.parameterScores,
-    weightsUsed: reliability.weightsUsed,
-    weatherNote: reliability.weatherNote,
-    anomalyDetected: mlResult.is_anomaly,
-    mlResult,
-    mlFeatures,
-    conflicts: conflictAnalysis.conflicts,
-    explanations: conflictAnalysis.explanations,
-    suggestedCalendar: conflictAnalysis.suggestedCalendar,
-    weatherAssessment: {
-      meanTemperature: weather.meanTemperature,
-      minTemperature: weather.minTemperature,
-      maxTemperature: weather.maxTemperature,
-      totalRainfall: weather.totalRainfall,
-      status: weather.weatherStatus,
-      score: weather.weatherCompatibilityScore,
-      dataSource: weather.dataSource,
-      summary: weather.suitabilitySummary,
-      note: weather.note
+router.get(
+  "/auth/session",
+  wrap(async (req, res) => {
+    const s = await a.session(req);
+    res.json(s ? { user: s.user, csrf: s.csrf } : { user: null });
+  }),
+);
+router.post(
+  "/auth/register",
+  a.csrf,
+  wrap(async (req, res) => {
+    bodyOnly(req.body, ["username", "password", "displayName", "language"]);
+    const username = a.username(req.body.username ?? req.body.displayName);
+    await a.throttle(req, "register");
+    const passwordHash = await a.hashPassword(req.body.password);
+    if (
+      typeof req.body.displayName !== "string" ||
+      !req.body.displayName.trim() ||
+      req.body.displayName.length > 100
+    )
+      throw a.fail(400, "INVALID_TEXT");
+    const u = {
+      id: a.randomUUID(),
+      username,
+      nameLogin: req.body.username === undefined,
+      displayName: req.body.displayName.trim(),
+      language: req.body.language === "bn" ? "bn" : "en",
+      defaultDistrict: "",
+      phone: "",
+      contactConsent: false,
+      createdAt: new Date().toISOString(),
+      passwordHash,
+    };
+    try {
+      await (await db.collection("farmers")).insertOne(u);
+    } catch (e) {
+      if (e.code === 11000) throw a.fail(409, "USERNAME_TAKEN");
+      throw e;
     }
-  };
+    res.status(201).json(await a.createSession(req, res, u));
+  }),
+);
+router.post(
+  "/auth/login",
+  a.csrf,
+  wrap(async (req, res) => {
+    bodyOnly(req.body, ["username", "displayName", "password"]);
+    await a.throttle(req, "login");
+    const username = a.username(req.body.username ?? req.body.displayName);
+    const farmers = await db.collection("farmers");
+    let u = await farmers.findOne({ username });
+    // Preserve sign-in for accounts created before the separate username input was removed.
+    if (!u && typeof req.body.displayName === "string") {
+      const matches = await farmers
+        .find({ displayName: req.body.displayName.normalize("NFC").trim() })
+        .collation({ locale: "en", strength: 2 })
+        .limit(2)
+        .toArray();
+      if (matches.length === 1) u = matches[0];
+    }
+    if (!u || !(await a.verify(req.body.password, u.passwordHash)))
+      throw a.fail(401, "INVALID_CREDENTIALS");
+    res.json(await a.createSession(req, res, u));
+  }),
+);
+router.use(a.requireAuth);
+router.use(a.csrf);
+router.post(
+  "/auth/logout",
+  wrap(async (req, res) => {
+    await (
+      await db.collection("sessions")
+    ).deleteOne({
+      tokenHash: req.session.tokenHash,
+      ownerId: req.session.ownerId,
+    });
+    a.setCookie(res, "", new Date(0));
+    res.json({ success: true });
+  }),
+);
+router.patch(
+  "/profile",
+  wrap(async (req, res) => {
+    bodyOnly(req.body, [
+      "displayName",
+      "language",
+      "defaultDistrict",
+      "phone",
+      "contactConsent",
+    ]);
+    const p = req.body;
+    if (
+      p.displayName !== undefined &&
+      (typeof p.displayName !== "string" ||
+        !p.displayName.trim() ||
+        p.displayName.length > 100)
+    )
+      throw a.fail(400, "INVALID_TEXT");
+    if (p.language !== undefined && !["en", "bn"].includes(p.language))
+      throw a.fail(400, "INVALID_LANGUAGE");
+    if (
+      p.defaultDistrict !== undefined &&
+      p.defaultDistrict !== "" &&
+      !districts.some((d) => d.name === p.defaultDistrict)
+    )
+      throw a.fail(400, "INVALID_DISTRICT");
+    if (p.contactConsent !== undefined && typeof p.contactConsent !== "boolean")
+      throw a.fail(400, "INVALID_TEXT");
+    if (
+      p.phone !== undefined &&
+      (typeof p.phone !== "string" || !/^\+?[০-৯\d -]{0,20}$/.test(p.phone))
+    )
+      throw a.fail(400, "INVALID_TEXT");
+    const current = await (
+      await db.collection("farmers")
+    ).findOne({ id: req.session.ownerId });
+    if (p.phone && !((p.contactConsent ?? current.contactConsent) === true))
+      throw a.fail(400, "CONTACT_CONSENT_REQUIRED");
+    if (p.contactConsent === false) p.phone = "";
+    if (p.displayName !== undefined && current.nameLogin)
+      p.username = a.username(p.displayName);
+    try {
+      await (
+        await db.collection("farmers")
+      ).updateOne({ id: req.session.ownerId }, { $set: p });
+    } catch (e) {
+      if (e.code === 11000) throw a.fail(409, "USERNAME_TAKEN");
+      throw e;
+    }
 
-  const savedRecord = await db.saveResult(finalResult);
-  return savedRecord;
+    res.json(a.publicFarmer({ ...current, ...p }));
+  }),
+);
+router.get(
+  "/plots",
+  wrap(async (req, res) =>
+    res.json(
+      (
+        await (
+          await db.collection("plots")
+        )
+          .find({ ownerId: req.session.ownerId })
+          .toArray()
+      ).map(clean),
+    ),
+  ),
+);
+router.post(
+  "/plots",
+  wrap(async (req, res) => {
+    bodyOnly(req.body, ["name", "area", "unit", "district"]);
+    const p = req.body;
+    if (
+      typeof p.name !== "string" ||
+      !p.name.trim() ||
+      p.name.length > 100 ||
+      !districts.some((d) => d.name === p.district) ||
+      !["ha", "acre", "decimal"].includes(p.unit) ||
+      (p.area !== null && (!Number.isFinite(p.area) || p.area <= 0))
+    )
+      throw a.fail(400, "INVALID_PLOT");
+    const r = { ...p, id: a.randomUUID(), ownerId: req.session.ownerId };
+    await (await db.collection("plots")).insertOne(r);
+    res.status(201).json(clean(r));
+  }),
+);
+router.post("/validate", (req, res) => {
+  const v = validate(req.body);
+  res.status(v.valid ? 200 : 400).json(v);
+});
+async function saveAnalysis(req, res, parentId) {
+  const key = req.get("Idempotency-Key");
+  if (!key || !/^[\w-]{16,100}$/.test(key))
+    throw a.fail(400, "IDEMPOTENCY_REQUIRED");
+  const parent = parentId ? await own(req, parentId) : null,
+    input = parentId ? req.body.correctedCalendar : req.body;
+  const validation = validate(input);
+  if (!validation.valid)
+    throw Object.assign(a.fail(400, "VALIDATION_FAILED"), {
+      details: validation.errors,
+    });
+  if (input.plotId) {
+    const plot = await (
+      await db.collection("plots")
+    ).findOne({ id: input.plotId, ownerId: req.session.ownerId });
+    if (!plot) throw a.fail(404, "NOT_FOUND");
+    if (plot.district !== input.district) throw a.fail(400, "INVALID_PLOT");
+  }
+  const ownerId = req.session.ownerId,
+    requests = await db.collection("requests"),
+    results = await db.collection("results");
+  const fingerprint = require("crypto")
+    .createHash("sha256")
+    .update(JSON.stringify({ input: validation.value, parentId }))
+    .digest("hex");
+  const prior = await requests.findOne({ ownerId, key });
+  if (prior) {
+    if (prior.fingerprint !== fingerprint)
+      throw a.fail(409, "IDEMPOTENCY_CONFLICT");
+    const result = await results.findOne({ ownerId, id: prior.resultId });
+    if (result) return res.json({ success: true, data: clean(result) });
+    if (Date.now() - new Date(prior.createdAt).getTime() > 120000) {
+      await requests.deleteOne({ _id: prior._id, createdAt: prior.createdAt });
+    } else throw a.fail(409, "REQUEST_IN_PROGRESS");
+  }
+  const resultId = prior?.resultId || a.randomUUID();
+  try {
+    await requests.insertOne({
+      ownerId,
+      key,
+      fingerprint,
+      resultId,
+      createdAt: new Date(),
+    });
+  } catch (e) {
+    if (e.code === 11000) throw a.fail(409, "REQUEST_IN_PROGRESS");
+    throw e;
+  }
+  try {
+    const result = await analyze(validation.value);
+    result.id = resultId;
+    result.ownerId = ownerId;
+    if (input.plotId) {
+      const p = await (
+        await db.collection("plots")
+      ).findOne({ id: input.plotId, ownerId });
+      result.plotSnapshot = {
+        name: p.name,
+        district: p.district,
+        area: p.area,
+        unit: p.unit,
+      };
+    }
+    result.parentId = parent?.id || null;
+    result.rootId = parent?.rootId || parent?.id || resultId;
+    if (parent)
+      result.comparison = {
+        originalScore: parent.reliabilityScore,
+        newScore: result.reliabilityScore,
+        scoreImprovement: result.reliabilityScore - parent.reliabilityScore,
+        originalConflicts: parent.conflicts,
+        newConflicts: result.conflicts,
+        sourceChanged:
+          JSON.stringify(parent.reference) !==
+            JSON.stringify(result.reference) ||
+          parent.mlResult?.model_version !== result.mlResult?.model_version,
+      };
+    await results.insertOne(result);
+    res.status(201).json({ success: true, data: clean(result) });
+  } catch (e) {
+    await requests.deleteOne({ ownerId, key });
+    throw e;
+  }
 }
-
-router.post('/analyze', async (req, res) => {
-  try {
-    const result = await runCompleteAnalysis(req.body);
-    res.json({ success: true, data: result });
-  } catch (err) {
-    console.error('Analysis error:', err.message);
-    res.status(err.status || 500).json({
-      success: false,
-      error: err.message,
-      details: err.details || null
-    });
-  }
-});
-
-/**
- * 7. Re-analyze with suggested corrections
- */
-router.post('/reanalyze', async (req, res) => {
-  try {
-    const { correctedCalendar, originalResultId } = req.body;
-    if (!correctedCalendar) {
-      return res.status(400).json({ error: 'Corrected calendar payload required.' });
+router.post(
+  "/analyze",
+  wrap((req, res) => saveAnalysis(req, res, null)),
+);
+router.post(
+  "/reanalyze",
+  wrap((req, res) => {
+    bodyOnly(req.body, ["correctedCalendar", "originalResultId"]);
+    if (typeof req.body.originalResultId !== "string")
+      throw a.fail(400, "NOT_FOUND");
+    return saveAnalysis(req, res, req.body.originalResultId);
+  }),
+);
+router.get(
+  "/history",
+  wrap(async (req, res) => {
+    const page = Number(req.query.page || 1);
+    if (!Number.isSafeInteger(page) || page < 1 || page > 100000)
+      throw a.fail(400, "INVALID_TEXT");
+    const limit = 10,
+      filter = { ownerId: req.session.ownerId };
+    for (const k of ["crop", "district"])
+      if (req.query[k]) filter["submission." + k] = String(req.query[k]);
+    if (req.query.status) filter.reliabilityCategory = String(req.query.status);
+    if (req.query.date) {
+      if (!validDate(req.query.date)) throw a.fail(400, "INVALID_DATE");
+      filter.createdAt = { $gte: req.query.date, $lt: req.query.date + "T99" };
     }
-
-    const updatedResult = await runCompleteAnalysis(correctedCalendar);
-    
-    // Attach reference to original result if available
-    let comparison = null;
-    if (originalResultId) {
-      const original = await db.getResultById(originalResultId);
-      if (original) {
-        comparison = {
-          originalScore: original.reliabilityScore,
-          newScore: updatedResult.reliabilityScore,
-          scoreImprovement: updatedResult.reliabilityScore - original.reliabilityScore,
-          resolvedConflicts: (original.conflicts || []).filter(c => c.status !== 'Compatible').length - 
-                             (updatedResult.conflicts || []).filter(c => c.status !== 'Compatible').length
-        };
+    if (req.query.search) {
+      const q = String(req.query.search)
+        .slice(0, 100)
+        .replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        "submission.crop",
+        "submission.district",
+        "submission.variety",
+      ].map((k) => ({ [k]: { $regex: q, $options: "i" } }));
+    }
+    const c = await db.collection("results");
+    res.json({
+      data: (
+        await c
+          .find(filter)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .toArray()
+      ).map(clean),
+      page,
+      total: await c.countDocuments(filter),
+      limit,
+    });
+  }),
+);
+router.get(
+  "/results/:id",
+  wrap(async (req, res) =>
+    res.json({ data: clean(await own(req, req.params.id)) }),
+  ),
+);
+router.patch(
+  "/results/:id/activities/:stage",
+  wrap(async (req, res) => {
+    await own(req, req.params.id);
+    bodyOnly(req.body, ["complete"]);
+    if (
+      typeof req.body.complete !== "boolean" ||
+      !["planting", "growth", "harvest"].includes(req.params.stage)
+    )
+      throw a.fail(400, "INVALID_ACTIVITY");
+    await (
+      await db.collection("results")
+    ).updateOne(
+      {
+        id: req.params.id,
+        ownerId: req.session.ownerId,
+        "activities.id": req.params.stage,
+      },
+      {
+        $set: {
+          "activities.$.complete": req.body.complete,
+          "activities.$.updatedAt": new Date().toISOString(),
+        },
+      },
+    );
+    res.json({ data: clean(await own(req, req.params.id)) });
+  }),
+);
+router.get(
+  "/dashboard",
+  wrap(async (req, res) => {
+    const c = await db.collection("results"),
+      all = await c
+        .find({ ownerId: req.session.ownerId })
+        .sort({ createdAt: -1 })
+        .toArray();
+    const active = all.filter((r) => !all.some((x) => x.parentId === r.id));
+    const activities = active
+      .flatMap((r) =>
+        (r.activities || []).map((v) => ({
+          ...v,
+          resultId: r.id,
+          crop: r.submission.crop,
+          district: r.submission.district,
+          plotId: r.submission.plotId,
+        })),
+      )
+      .filter((v) => !v.complete)
+      .sort((a, b) => a.start.localeCompare(b.start));
+    const overlaps = [];
+    for (let i = 0; i < active.length; i++)
+      for (let j = i + 1; j < active.length; j++) {
+        const a = active[i],
+          b = active[j];
+        if (
+          a.submission.plotId &&
+          a.submission.plotId === b.submission.plotId &&
+          a.rootId !== b.rootId &&
+          a.submission.plantingStart <= b.submission.harvestEnd &&
+          b.submission.plantingStart <= a.submission.harvestEnd
+        )
+          overlaps.push({
+            first: a.id,
+            second: b.id,
+            plotId: a.submission.plotId,
+          });
+      }
+    res.json({
+      count: all.length,
+      recent: all.slice(0, 5).map(clean),
+      recentRevisions: all
+        .filter((r) => r.parentId)
+        .slice(0, 5)
+        .map(clean),
+      activities: activities.slice(0, 30),
+      incomplete: activities.length,
+      revisions: all.filter((r) => r.parentId).length,
+      overlaps,
+      activeAlerts: await (
+        await db.collection("notifications")
+      ).countDocuments({ ownerId: req.session.ownerId, dismissed: false }),
+    });
+  }),
+);
+router.get(
+  "/notifications",
+  wrap(async (req, res) =>
+    res.json(
+      (
+        await (
+          await db.collection("notifications")
+        )
+          .find({ ownerId: req.session.ownerId, dismissed: false })
+          .sort({ createdAt: -1 })
+          .limit(100)
+          .toArray()
+      ).map(clean),
+    ),
+  ),
+);
+router.patch(
+  "/notifications/:id",
+  wrap(async (req, res) => {
+    bodyOnly(req.body, ["read", "dismissed"]);
+    if (
+      !Object.keys(req.body).length ||
+      Object.values(req.body).some((v) => typeof v !== "boolean")
+    )
+      throw a.fail(400, "INVALID_TEXT");
+    const c = await db.collection("notifications"),
+      r = await c.updateOne(
+        { id: req.params.id, ownerId: req.session.ownerId },
+        { $set: req.body },
+      );
+    if (!r.matchedCount) throw a.fail(404, "NOT_FOUND");
+    res.json({ success: true });
+  }),
+);
+router.post(
+  "/weather/refresh",
+  wrap(async (req, res) => {
+    bodyOnly(req.body, []);
+    const ownerId = req.session.ownerId,
+      all = await (await db.collection("results")).find({ ownerId }).toArray(),
+      current = all.filter((r) => !all.some((x) => x.parentId === r.id));
+    const products = [],
+      forecasts = new Map(),
+      today = new Date().toISOString().slice(0, 10),
+      end = new Date(Date.now() + 6 * 86400000).toISOString().slice(0, 10);
+    const applicable = current.filter(
+      (r) =>
+        r.submission.harvestEnd >= today && r.submission.plantingStart <= end,
+    );
+    const districtNames = [
+      ...new Set(applicable.map((r) => r.submission.district)),
+    ];
+    // At most three provider requests at once; avoid serial timeouts across districts.
+    for (let i = 0; i < districtNames.length; i += 3)
+      await Promise.all(
+        districtNames
+          .slice(i, i + 3)
+          .map(async (district) =>
+            forecasts.set(district, await getForecast(district)),
+          ),
+      );
+    for (const r of applicable) {
+      const w = forecasts.get(r.submission.district);
+      products.push({ resultId: r.id, ...w });
+      if (!w.available) continue;
+      for (const day of w.rows) {
+        const stage = r.activities.find(
+          (a) => a.start <= day.date && a.end >= day.date,
+        );
+        if (!stage) continue;
+        const t = r.reference.temperatureRange;
+        if (day.max > t.max || day.min < t.min) {
+          const key = [r.id, day.date, stage.stage, "temperature"].join(":");
+          await (
+            await db.collection("notifications")
+          ).updateOne(
+            { ownerId, key },
+            {
+              $set: { weather: w, day, threshold: t },
+              $setOnInsert: {
+                id: a.randomUUID(),
+                ownerId,
+                key,
+                resultId: r.id,
+                crop: r.submission.crop,
+                district: r.submission.district,
+                plotId: r.submission.plotId || null,
+                date: day.date,
+                stage: stage.stage,
+                type: "temperature",
+                read: false,
+                dismissed: false,
+                createdAt: new Date().toISOString(),
+              },
+            },
+            { upsert: true },
+          );
+        }
       }
     }
-
-    res.json({
-      success: true,
-      data: updatedResult,
-      comparison
-    });
-  } catch (err) {
-    res.status(err.status || 500).json({ success: false, error: err.message });
-  }
-});
-
-/**
- * 8. Retrieve saved result by ID
- */
-router.get('/results/:id', async (req, res) => {
-  const result = await db.getResultById(req.params.id);
-  if (!result) {
-    return res.status(404).json({ error: 'Analysis result not found.' });
-  }
-  res.json({ success: true, data: result });
-});
-
-/**
- * 9. Analysis History endpoint
- */
-router.get('/history', async (req, res) => {
-  const history = await db.getRecentHistory(15);
-  res.json({ success: true, data: history });
-});
-
+    res.json({ products, checkedAt: new Date().toISOString() });
+  }),
+);
+router.get(
+  "/results/:id/report.csv",
+  wrap(async (req, res) => {
+    const r = await own(req, req.params.id);
+    const { reportRows } = require("../services/report");
+    const lang = req.query.lang === "bn" ? "bn" : "en";
+    const escape = (v) =>
+      '"' +
+      String(v ?? "")
+        .replace(/^[\s\uFEFF]*[=+@-]/, "'$&")
+        .replaceAll('"', '""') +
+      '"';
+    res
+      .set("Content-Type", "text/csv; charset=utf-8")
+      .set(
+        "Content-Disposition",
+        `attachment; filename="agrochrono-${r.id}-${lang}.csv"`,
+      )
+      .send(
+        "\uFEFF" +
+          reportRows(
+            r,
+            lang,
+            req.query.includeProfile === "true"
+              ? { farmer: req.session.user.displayName, plot: r.plotSnapshot }
+              : null,
+          )
+            .map((row) => row.map(escape).join(","))
+            .join("\r\n"),
+      );
+  }),
+);
 module.exports = router;

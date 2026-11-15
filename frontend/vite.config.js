@@ -1,27 +1,25 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: "127.0.0.1",
     port: 3000,
-    host: true,
     proxy: {
-      '/api': {
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:5000',
-        changeOrigin: true
-      }
-    }
+      "/api": {
+        target: process.env.VITE_BACKEND_URL || "http://127.0.0.1:5000",
+        changeOrigin: false,
+      },
+    },
   },
   preview: {
-    port: 3000,
-    host: true,
-    allowedHosts: true,
+    host: "127.0.0.1",
+    port: 4173,
     proxy: {
-      '/api': {
-        target: process.env.VITE_BACKEND_URL || 'https://agrochrono-app-production.up.railway.app',
-        changeOrigin: true
-      }
-    }
-  }
+      "/api": {
+        target: process.env.VITE_BACKEND_URL || "http://127.0.0.1:5000",
+        changeOrigin: false,
+      },
+    },
+  },
 });
