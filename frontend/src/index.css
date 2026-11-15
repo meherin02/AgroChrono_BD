@@ -863,6 +863,18 @@ button:hover:not(:disabled) {
   color: #c1e6d3;
   padding: 0 12px;
 }
+@media screen and (min-width: 851px) {
+  .sidebar {
+    position: sticky;
+    top: 22px;
+    align-self: start;
+    min-height: 0;
+    max-height: calc(100dvh - 44px);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-width: thin;
+  }
+}
 .sidebar > .hint {
   color: #a2c7b4;
   padding: 0 12px;
