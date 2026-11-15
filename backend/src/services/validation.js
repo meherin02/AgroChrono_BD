@@ -25,6 +25,11 @@ function validDate(v) {
     new Date(v).toISOString().slice(0, 10) === v
   );
 }
+function normalizeDate(v) {
+  const text = typeof v === "string" ? digits(v).trim() : v;
+  const match = typeof text === "string" && /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(text);
+  return match ? `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}` : text;
+}
 function validate(data) {
   let errors = [];
   if (!data || typeof data !== "object" || Array.isArray(data))
@@ -47,7 +52,7 @@ function validate(data) {
   const value = Object.fromEntries(
     allowed
       .filter((k) => data[k] !== undefined)
-      .map((k) => [k, dateFields.includes(k) ? digits(data[k]) : data[k]]),
+      .map((k) => [k, dateFields.includes(k) ? normalizeDate(data[k]) : data[k]]),
   );
   for (const field of ["variety", "plotId"])
     if (
@@ -66,10 +71,8 @@ function validate(data) {
     for (let i = 1; i < dateFields.length; i++)
       if (value[dateFields[i]] < value[dateFields[i - 1]])
         errors.push({ code: "STAGE_ORDER", field: dateFields[i] });
-    const days =
-      (Date.parse(value.harvestEnd) - Date.parse(value.plantingStart)) /
-      86400000;
-    if (days < 45 || days > 320) errors.push({ code: "DURATION_RANGE" });
+    // Agronomic duration is assessed against the crop reference by the scoring
+    // engine. Unusual durations must reach assessment instead of being rejected.
   }
   return { valid: errors.length === 0, errors, value };
 }
