@@ -1775,6 +1775,10 @@ progress::-moz-progress-bar {
 @media (max-width: 850px) {
   .sidebar {
     margin: 0;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    align-self: start;
     min-height: 0;
     border-radius: 0;
     background: #fff;
